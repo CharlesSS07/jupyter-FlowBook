@@ -1,2 +1,2 @@
 # jupyter-nodebook
-Jupyter Notebook extension that makes cells into nodes in a visual programming language.
+A Jupyter Notebook extension that turns cells into movable and resizable nodes in a flow-like visual programming language.
