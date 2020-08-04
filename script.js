@@ -247,7 +247,9 @@ $('.cell').resizable();
 // make floating cells opaque and in the same plane
 $('.cell').css('background', 'white');
 $('.cell').css('z-index', 1);
+$('.cell').css('transition', '1s');
 $('.cell').css('box-shadow', "black 0px 0px 10px 0px"); // add box shadow
+$('.cell').css('width', '500px');
 
 // turn all the cells into floating movable nodes=
 for (cell of $('.cell')) {
@@ -256,7 +258,14 @@ for (cell of $('.cell')) {
 //     cell.css('left', c[1]);
     addPins(cell);
     addToolMenu(cell);
-    const top1 = cell.offsetTop
+    const top1  = cell.offsetTop;
+    const left1 = cell.offsetLeft;
+    const off = $(cell).offset();
+    console.log(top1, left1);
+    console.log(off);
+    $(cell).css('position', 'absolute');
+    $(cell).css('top',   1000*Math.random());
+    $(cell).css('left',  500*Math.random()+500);
     
     
     
@@ -265,12 +274,12 @@ for (cell of $('.cell')) {
 //         const top1 = $(this).css('top');
 //         const left1 = $(this).css('left');
 //         console.log(top1, left1);
-        const c = [this.offsetTop, this.offsetLeft]//getCoords(this);
-        console.log(c);
+//         const c = [this.offsetTop, this.offsetLeft]//getCoords(this);
+//         console.log(c);
         $(this).parent().append($(this));
-        $(this).css('position', 'absolute');
-        $(this).css('top',   c[0]);
-        $(this).css('left',  c[1]);
+//         $(this).css('position', 'absolute');
+//         $(this).css('top',   c[0]);
+//         $(this).css('left',  c[1]);
     });
 }
 
