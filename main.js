@@ -66,7 +66,14 @@ define([
           }
         }
 
-
+	function load_css (name) {
+            $('<link/>').attr({
+                type: 'text/css',
+                rel: 'stylesheet',
+                href: requirejs.toUrl(name)
+            }).appendTo('head');
+        }
+        load_css('./style.css');
 
 
 
