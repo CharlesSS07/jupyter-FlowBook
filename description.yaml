@@ -1,0 +1,7 @@
+Type: IPython Notebook Extension
+Name: Jupyter Nodebook
+Description: Make jupyter notebook into a visual programming language
+Link: README.md
+Main: main.js
+Parameters:
+- none
