@@ -240,8 +240,9 @@ $('body').append('<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"><
 
 
 // make cells draggable and resizable
-$('.cell').draggable();
-$('.cell').resizable();
+// $('.cell').css('position', 'absolute');
+// $('.cell').draggable();
+// $('.cell').resizable();
 
 
 // make floating cells opaque and in the same plane
@@ -250,6 +251,8 @@ $('.cell').css('z-index', 1);
 $('.cell').css('transition', '1s');
 $('.cell').css('box-shadow', "black 0px 0px 10px 0px"); // add box shadow
 $('.cell').css('width', '500px');
+$('.cell').css('transition', '0s');
+
 
 // turn all the cells into floating movable nodes=
 for (cell of $('.cell')) {
@@ -258,14 +261,13 @@ for (cell of $('.cell')) {
 //     cell.css('left', c[1]);
     addPins(cell);
     addToolMenu(cell);
-    const top1  = cell.offsetTop;
-    const left1 = cell.offsetLeft;
-    const off = $(cell).offset();
-    console.log(top1, left1);
-    console.log(off);
-    $(cell).css('position', 'absolute');
-    $(cell).css('top',   1000*Math.random());
-    $(cell).css('left',  500*Math.random()+500);
+    let top1  = cell.getBoundingClientRect().top;
+    let left1 = cell.getBoundingClientRect().left;
+    console.log(cell);
+    console.log(cell.getBoundingClientRect());
+//     $(cell).css('position', 'absolute');
+//     $(cell).css('top',   top1);
+//     $(cell).css('left',  left1);
     
     
     
@@ -276,6 +278,11 @@ for (cell of $('.cell')) {
 //         console.log(top1, left1);
 //         const c = [this.offsetTop, this.offsetLeft]//getCoords(this);
 //         console.log(c);
+//         const top1  = cell.getBoundingClientRect().top;
+//     const left1 = cell.getBoundingClientRect().top;
+//     console.log(top1, left1);
+//     $(cell).css('top',   top1);
+//     $(cell).css('left',  left1);
         $(this).parent().append($(this));
 //         $(this).css('position', 'absolute');
 //         $(this).css('top',   c[0]);
