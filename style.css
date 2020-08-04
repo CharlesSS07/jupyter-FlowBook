@@ -13,6 +13,15 @@ body {
 	padding: 10px;
 }
 
+pre {
+    display: inline-block
+}
+
+#maintoolbar {
+    position: absolute;
+    display: none;
+}
+
 .input-var-div {
 	background-color: white;
 	padding: 10px;
@@ -22,6 +31,7 @@ body {
 	border-radius: 10px;
 	text-align: left;
 }
+
 
 .title {
 	padding: 10px;
