@@ -1,79 +1,10 @@
-define([
-    'base/js/namespace',
-    'base/js/events'
-    ], function(Jupyter, events) {
-        function makeDraggable(node) {
-          var deltax = 0, deltay = 0, x1 = 0, y1 = 0;
-        //   if (document.getElementById(node.id + "header")) {
-        //     // if present, the header is where you move the DIV from:
-        //     document.getElementById(node.id + "header").onmousedown = dragMouseDown;
-        //   } else {
-        //     // otherwise, move the DIV from anywhere inside the DIV:
-        //     node.onmousedown = dragMouseDown;
-        //   }
-          node.onmousedown = dragMouseDown;
-          node.style.position = 'absolute';
-          node.style.width = '500px';
-          node.style.resizable = 'both';
-          node.style.background = 'white';
-          node.style.zIndex = 1;
-          node.style.boxShadow = "black 0px 0px 10px 0px";
-          
-          function dragMouseDown(e) {
-        e = e || window.event;
-        
-        node.click(); // select node  
-        
-        // bring element to top when clicked
-        const parent = node.parentElement; // get elements parent
-        node.remove(); // remove element
-        parent.append(node); // add it back, to the top
-        
-        if (e.target.nodeName == 'PRE' || e.target.nodeName == 'SPAN') {
-        // dont activate dragging if user is selecting text
-        } else {
-          e.preventDefault();
-          
-          // get the mouse cursor position at startup:
-          x1 = e.clientX;
-          y1 = e.clientY;
-          document.onmouseup = closeDragElement;
-          
-          // call a function whenever the cursor moves:
-          document.onmousemove = elementDrag;
-        }
-          }
+define(['base/js/namespace','base/js/events', 'require'], function(Jupyter, events, requirejs) {
 
-          function elementDrag(e) {
-        e = e || window.event;
-        e.preventDefault();
-        
-        // calculate the new cursor position:
-        deltax = x1 - e.clientX;
-        deltay = y1 - e.clientY;
-        x1 = e.clientX;
-        y1 = e.clientY;
-        
-        // set the element's new position:
-        node.style.top = (node.offsetTop - deltay) + "px";
-        node.style.left = (node.offsetLeft - deltax) + "px";
-          }
 
-          function closeDragElement() {
-        // stop moving when mouse button is released:
-        document.onmouseup = null;
-        document.onmousemove = null;
-          }
-        }
 
-	function load_css (name) {
-            $('<link/>').attr({
-                type: 'text/css',
-                rel: 'stylesheet',
-                href: requirejs.toUrl(name)
-            }).appendTo('head');
-        }
-        load_css('./style.css');
+//function getCellById(id) {
+//    return Jupyter.notebook.get_cells().find(cell => cell.metadata.nodes.id == id);
+//}
 
 
 
@@ -82,147 +13,202 @@ define([
 
 
 
-        function addPins(node) {
-        
-        function makePin(x, y) {
-        var pin = document.createElement('div');
-        pin.className = "node-pin";
-        pin.style.top = -y + "px";
-        pin.style.left = x + "px";
-        return pin;
-        }
-        
-        var pin = makePin(node.offsetWidth, node.offsetHeight);
-        pin.className+=" output-node-pin";
-        node.append(pin);
-        }
 
-
-
-        function addToolMenu(node) {
-        node.oncontextmenu = showToolMenu;
-        function showToolMenu(e) {
-        e = e || window.event;
-        e.preventDefault();
-        node.click(); // select node
-        $('#maintoolbar').css('display', 'inline-block');
-        $('#maintoolbar').css('top', e.clientY + 'px');
-        $('#maintoolbar').css('left', e.clientX + 'px');
-        document.addEventListener("click", hideToolMenu);
-        }
-        function hideToolMenu(e) {
-        $('#maintoolbar').css('display', 'none');
-        //         document.onmouseup = null;
-        }
-        }
-
-        function getCoords(elem) { // crossbrowser version
-        var box = elem.getBoundingClientRect();
-
-        var body = document.body;
-        var docEl = document.documentElement;
-
-        var scrollTop = window.pageYOffset || docEl.scrollTop || body.scrollTop;
-        var scrollLeft = window.pageXOffset || docEl.scrollLeft || body.scrollLeft;
-
-        var clientTop = docEl.clientTop || body.clientTop || 0;
-        var clientLeft = docEl.clientLeft || body.clientLeft || 0;
-
-        var top  = box.top +  scrollTop - clientTop;
-        var left = box.left + scrollLeft - clientLeft;
-        
-        //     console.log(top, left);
-
-        return [top, left];
-        }
+function addTitle(cell_obj) {
+    if (!cell_obj.metadata.nodes.title) cell_obj.metadata.nodes.title = '';
+    $('<div>').attr('class', 'node-title').html(cell_obj.metadata.nodes.title).prependTo(cell_obj.element);
+}
 
 
 
 
-        // add custom stylesheet
-        $('head').append('<link rel="stylesheet" href="/files/style.css">');
-
-        // add jquery ui
-        $('body').append('<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>');
-
-
-        // make cells draggable and resizable
-        $('.cell').draggable();
-        $('.cell').resizable();
-
-
-        // make floating cells opaque and in the same plane
-        $('.cell').css('background', 'white');
-        $('.cell').css('z-index', 1);
-        $('.cell').css('box-shadow', "black 0px 0px 5px 0px"); // add box shadow
-        $('.cell').css('width', '500px');
-        // $('.cell').css('transition', '0s');
-
-        $('#notebook-container').css('transition', '1s');
-        $('#notebook-container').css('background', 'transparent');
-        $('#notebook-container').css('box-shadow', 'none');
-
-
-        // turn all the cells into floating movable nodes=
-        for (cell of $('.cell').get().reverse()) {
-        //     c = getCoords(cell); // get curent coordinates of the cell
-        //     cell.css('top', c[0]);
-        //     cell.css('left', c[1]);
-        addPins(cell);
-        addToolMenu(cell);
-        let top1  = cell.offsetTop;//getBoundingClientRect().top;
-        let left1 = cell.offsetLeft;//getBoundingClientRect().left;
-        console.log(cell);
-        console.log(cell.getBoundingClientRect());
-        $(cell).css('position', 'absolute');
-        $(cell).css('top',   top1);
-        $(cell).css('left',  left1);
-        
-        
-        
-        cell.addEventListener('mousedown', function(){
-        // bring element to top when clicked
-        $(this).parent().append($(this));
-        this.click();
-        });
-        }
+function addPins(cell_obj) {
+    if (!cell_obj.metadata.nodes.inputs) cell_obj.metadata.nodes.inputs = [];
+    if (!cell_obj.metadata.nodes.outputs) cell_obj.metadata.nodes.outputs = [];
 
 
 
+    const inputsdiv = $('<div>').attr('class', 'node-inputs').prependTo(cell_obj.element);
+    for (let pin of cell_obj.metadata.nodes.inputs) {
+        $('<div>').attr('class', 'node-input').append($('<input>').val(pin.name)).appendTo(inputsdiv);
+    }
 
-        // ncontainer.style.background = 'transparent';
-        // ncontainer.style.boxShadow = 'none';
-
-
-
-
-
-        // const background = document.getElementById('notebook');
-
-        // (function() {
-        //     let x1; let y1;
-        //     background.onmousedown = startBackgroundPan;
-        //     function startBackgroundPan(e) {
-        //         // start background panning
-        //         x1 = e.clientX;
-        //         y1 = e.clietY;
-        //         document.onmousemove = backgroundPan;
-        //         document.onmouseup = stopBackgroundPan;
-        //     }
-        //     function backgroundPan(e) {
-        //         background.style.top  = y1 - e.clientY;
-        //         background.style.left = x1 - e.clientX;
-        //     }
-        //     function stopBackgroundPan(e) {
-        //         document.onmousemove = null;
-        //         document.onmouseup = null;
-        //     }
-        // })();
-
-
-        //document.getElementById('notebook-container').size = 10000000;
-
-        //addNode(document.getElementById('notebook_panel'), "test node", [new InputVariable("x"), new InputVariable("y")], new Cell()); // add new stuff
-
-        //alert("run");
+    const addInput = $('<input>').attr('type', 'button').val('+');
+    $('<div>').appendTo(inputsdiv).append(addInput);
+    addInput.click(function(e){
+        console.log(e);
+        console.log('add input');
+        cell_obj.metadata.nodes.inputs.push({'name':''})
     });
+
+
+
+
+    const outputsdiv = $('<div>').attr('class', 'node-outputs').appendTo(cell_obj.element);
+    for (let pin of cell_obj.metadata.nodes.outputs) {
+        $('<div>').attr('class', 'node-output').append($('<input>').val(pin.name)).appendTo(outputsdiv);
+    }
+
+    const addOutput = $('<input>').attr('type', 'button').val('+');
+    $('<div>').appendTo(outputsdiv).append(addOutput);;
+    addOutput.click(function(e){
+        console.log('add output');
+        cell_obj.metadata.nodes.outputs.push({'name':''})
+    });
+}
+
+
+
+
+
+
+
+function addToolMenu(node) {
+    node.oncontextmenu = showToolMenu;
+
+    function showToolMenu(e) {
+        e = e || window.event;
+        if (!e.shiftKey) {
+            e.preventDefault();
+            node.click(); // select node
+            $('#maintoolbar').css('display', 'inline-block');
+            $('#maintoolbar').css('top', e.clientY + 'px');
+            $('#maintoolbar').css('left', e.clientX + 'px');
+            document.addEventListener("click", hideToolMenu);
+        }
+    }
+
+    function hideToolMenu(e) {
+        $('#maintoolbar').css('display', 'none');
+    }
+}
+
+
+
+
+// converts a standard jupyter cell (DOM element) to a node with full functionality
+function cellToNode(cell_obj) {
+    const cell = cell_obj.element[0]; // get element
+
+    // create node data in metadata
+    if (!cell_obj.metadata.nodes) cell_obj.metadata.nodes = {};
+
+//    // get unique id
+//    if (!cell_obj.metadata.nodes.id)
+
+    // make cell draggable and resizable
+    $(cell).resizable({
+        minWidth: 200,
+        handles: 'e, w'
+    });
+    $(cell).draggable();
+
+    // add ui elements to cell
+    addPins(cell_obj);
+    addTitle(cell_obj);
+    addToolMenu(cell);
+
+    // position nodes according to metadata
+    if (!cell_obj.metadata.nodes) {
+        saveNodeMetaData();
+    }
+    $(cell).css('position', 'absolute');
+    $(cell).css('top',   cell_obj.metadata.nodes.boundingBox.top);
+    $(cell).css('left',  cell_obj.metadata.nodes.boundingBox.left);
+    $(cell).css('width', cell_obj.metadata.nodes.boundingBox.width);
+
+
+    // bring element to top when clicked
+    cell.addEventListener('mousedown', function(){
+        $(this).parent().append($(this)); // move cell to the end of div, making it display over the others
+        this.click(); // activate other click functionality (usually cancelled by draggable)
+    });
+    cell.addEventListener('mouseup', function(e){
+        saveNodeMetadata();
+    });
+
+    function saveNodeMetadata() {
+        // save position
+        if (!cell_obj.metadata.nodes.boundingBox) cell_obj.metadata.nodes.boundingBox = {};
+        cell_obj.metadata.nodes.boundingBox.top = cell.offsetTop;
+        cell_obj.metadata.nodes.boundingBox.left = cell.offsetLeft;
+        cell_obj.metadata.nodes.boundingBox.width = cell.offsetWidth;
+    }
+}
+
+
+// attach custom stylesheet
+$('<link/>').attr('type', 'text/css').attr('rel', 'stylesheet').attr('href', requirejs.toUrl('./style.css')).appendTo('head');
+
+
+// add jquery ui
+$('<script>').attr('src', "https://code.jquery.com/ui/1.12.1/jquery-ui.js").appendTo('body');
+
+
+// convert every existing cell to a node
+for (cell of Jupyter.notebook.get_cells().reverse()) {
+    cellToNode(cell);
+}
+
+// convert newly created cells to nodes
+Jupyter.notebook.events.on('create.Cell', (event, data)=>{
+    cellToNode(data.cell);
+});
+
+
+// panning/zooming functionality
+
+// set starting view from metadata
+if (!Jupyter.notebook.metadata.nodes) Jupyter.notebook.metadata.nodes = {};
+if (!Jupyter.notebook.metadata.nodes.view) Jupyter.notebook.metadata.nodes.view = {};
+$('#notebook-container').css('top',  Jupyter.notebook.metadata.nodes.view.top  || 0);
+$('#notebook-container').css('left', Jupyter.notebook.metadata.nodes.view.left || 0);
+$('#notebook-container').css('zoom', Jupyter.notebook.metadata.nodes.view.zoom || 1);
+
+// create pan/zoom event listeners
+(function(){
+    // panning
+    let x1 = 0; let y1 = 0; let startX = 0; let startY = 0; let deltaX = 0; let deltaY = 0;
+    document.addEventListener('mousedown', function(e) {
+        if (e.target.id == 'notebook') { // when clicking on the background
+            x1 = e.x;
+            y1 = e.y;
+            startX = $('#notebook-container')[0].offsetLeft;
+            startY = $('#notebook-container')[0].offsetTop;
+            $('#notebook').css('cursor', 'grabbing');
+            // start panning until mouse goes back up
+            document.onmousemove = function(e) { // pan based off mouse movement
+               deltaX = e.x - x1;
+               deltaY = e.y - y1;
+               $('#notebook-container').css('top', startY+deltaY/$('#notebook-container').css('zoom'))
+               $('#notebook-container').css('left', startX+deltaX/$('#notebook-container').css('zoom'));
+           };
+            document.onmouseup = function() { // stop panning
+                // remove listeners
+                document.onmousemove = null;
+                document.onmouseup = null;
+                // save position
+                Jupyter.notebook.metadata.nodes.view.top  = $('#notebook-container')[0].offsetTop;
+                Jupyter.notebook.metadata.nodes.view.left = $('#notebook-container')[0].offsetLeft;
+                // change cursor
+                $('#notebook').css('cursor', 'grab');
+            };
+        }
+    });
+
+
+
+    // zooming
+    document.addEventListener('mousewheel', function(e) {
+        if (e.target.id == 'notebook') {
+            // zoom exponentially
+            $('#notebook-container').css('zoom', $('#notebook-container').css('zoom')*(2**(-e.deltaY/500)));
+            // save zoom position
+            Jupyter.notebook.metadata.nodes.view.zoom  = $('#notebook-container').css('zoom');
+        }
+    });
+})();
+
+
+
+});

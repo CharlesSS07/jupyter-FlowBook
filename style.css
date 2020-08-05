@@ -4,33 +4,59 @@ body {
 	color: grey;
 }
 
-.node-div {
-	position: absolute;
-	background-color: #f1f1f1;
-	text-align: center;
-	border: 1px solid #d3d3d3;
-	border-radius: 10px;
-	padding: 10px;
-}
 
-pre {
-    display: inline-block
-}
+
 
 #maintoolbar {
     position: absolute;
     display: none;
 }
 
-.input-var-div {
-	background-color: white;
-	padding: 10px;
-	margin: 5px;
-	height: 10px;
-	border: 2px solid black;
-	border-radius: 10px;
-	text-align: left;
+
+#notebook {
+    cursor: grab;
 }
+
+
+#notebook-container {
+    position: absolute;
+    width: 0;
+    height: 0;
+    padding: 0;
+}
+
+.end_space {
+    width: 0;
+    hegiht: 0;
+}
+
+
+
+.cell {
+    display: inline-block !important;
+    background: #FFF;
+    z-index: 1;
+    box-shadow: black 0px 0px 5px 0px;
+}
+
+.node-input {
+}
+
+.node-input input {
+    width: 100px;
+}
+
+
+.node-input::before, .node-output::after {
+    content: '';
+    width: 10px;
+    height: 10px;
+    border-radius: 100%;
+    background: red;
+    vertical-align: middle;
+    border: 1px solid green;
+}
+
 
 
 .title {
@@ -40,21 +66,12 @@ pre {
 	border-radius: 10px;
 }
 
-.cell-div {
-	padding: 10px;
-	cursor: move;
-	background-color: #2196F3;
-	color: #fff;
-	border-radius: 10px;
-}
 
-.result-div {
-	padding: 10px;
-	margin: 5px;
-	height: 10px;
-	border-radius: 10px;
-	text-align: left;
-}
+
+
+
+
+
 
 .node-pin {
     width: 10px;
@@ -63,9 +80,19 @@ pre {
     position: relative;
 }
 
+
+
+
+
+
 .output-node-pin {
     background: red;
 }
+
+
+
+
+
 
 .input-node-pin {
     background: green;
