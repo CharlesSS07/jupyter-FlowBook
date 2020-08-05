@@ -32,7 +32,7 @@ pre {
 
 
 .cell {
-    background: red;
+    background: #FFF;
     z-index: 1;
     box-shadow: black 0px 0px 5px 0px;
 }
