@@ -7,16 +7,6 @@ body {
 
 
 
-
-
-pre {
-    display: inline-block
-}
-
-
-
-
-
 #maintoolbar {
     position: absolute;
     display: none;
@@ -25,8 +15,18 @@ pre {
 
 
 #notebook-container {
-    background: transparent;
-    box-shadow: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0;
+    height: 0;
+    padding: 0;
+    zoom: 1;
+}
+
+.end_space {
+    width: 0;
+    hegiht: 0;
 }
 
 

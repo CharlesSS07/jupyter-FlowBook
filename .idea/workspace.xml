@@ -4,6 +4,7 @@
     <list default="true" id="3f75f648-c74e-43d9-afe9-acd8e5e712f4" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.js" beforeDir="false" afterPath="$PROJECT_DIR$/main.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/style.css" beforeDir="false" afterPath="$PROJECT_DIR$/style.css" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -34,13 +35,13 @@
     <servers />
   </component>
   <component name="WindowStateProjectService">
-    <state x="988" y="705" width="1020" height="706" key="com.intellij.openapi.editor.actions.MultiplePasteAction$ClipboardContentChooser" timestamp="1596590256834">
+    <state x="988" y="705" width="1020" height="706" key="com.intellij.openapi.editor.actions.MultiplePasteAction$ClipboardContentChooser" timestamp="1596603216340">
       <screen x="0" y="30" width="3840" height="2130" />
     </state>
-    <state x="988" y="705" width="1020" height="706" key="com.intellij.openapi.editor.actions.MultiplePasteAction$ClipboardContentChooser/0.30.3840.2130@0.30.3840.2130" timestamp="1596590256834" />
-    <state x="1167" y="505" key="run.anything.popup" timestamp="1596600007534">
+    <state x="988" y="705" width="1020" height="706" key="com.intellij.openapi.editor.actions.MultiplePasteAction$ClipboardContentChooser/0.30.3840.2130@0.30.3840.2130" timestamp="1596603216340" />
+    <state x="1167" y="505" key="run.anything.popup" timestamp="1596602398936">
       <screen x="0" y="30" width="3840" height="2130" />
     </state>
-    <state x="1167" y="505" key="run.anything.popup/0.30.3840.2130@0.30.3840.2130" timestamp="1596600007534" />
+    <state x="1167" y="505" key="run.anything.popup/0.30.3840.2130@0.30.3840.2130" timestamp="1596602398936" />
   </component>
 </project>

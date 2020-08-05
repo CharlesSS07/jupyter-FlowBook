@@ -84,6 +84,7 @@ function cellToNode(cell_obj) {
         this.click();
     });
     cell.addEventListener('mouseup', function(e){
+        // save node position
 	    cell_obj.metadata.nodes = {};
         cell_obj.metadata.nodes.boundingBox = {};
         cell_obj.metadata.nodes.boundingBox.top = cell.offsetTop;
@@ -112,8 +113,39 @@ Jupyter.notebook.events.on('create.Cell', (event, data)=>{
 });
 
 
+// panning/zooming functionality
+(function(){
+    // panning
+    let x1 = 0; let y1 = 0; let startX = 0; let startY = 0; let deltaX = 0; let deltaY = 0;
+    document.addEventListener('mousedown', function(e) {
+        if (e.target.id == 'notebook') { // when clicking on the background
+            x1 = e.x;
+            y1 = e.y;
+            startX = $('#notebook-container')[0].offsetLeft;
+            startY = $('#notebook-container')[0].offsetTop;
+            // start panning until mouse goes back up
+            document.onmousemove = function(e) { // pan based off mouse movement
+               deltaX = e.x - x1;
+               deltaY = e.y - y1;
+               $('#notebook-container').css('top', startY+deltaY/$('#notebook-container').css('zoom'))
+               $('#notebook-container').css('left', startX+deltaX/$('#notebook-container').css('zoom'));
+           };
+            document.onmouseup = function() {
+                document.onmousemove = null;
+                document.onmouseup = null;
+            };
+        }
+    });
 
 
+
+    // zooming
+    document.addEventListener('mousewheel', function(e) {
+        if (e.target.id == 'notebook') {
+            $('#notebook-container').css('zoom', $('#notebook-container').css('zoom')*(2**(-e.deltaY/500)));
+        }
+    });
+})();
 // (function() {
 //     let x1; let y1;
 //     background.onmousedown = startBackgroundPan;
