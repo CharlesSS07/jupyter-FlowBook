@@ -13,15 +13,16 @@ body {
 }
 
 
+#notebook {
+    cursor: grab;
+}
+
 
 #notebook-container {
     position: absolute;
-    top: 0;
-    left: 0;
     width: 0;
     height: 0;
     padding: 0;
-    zoom: 1;
 }
 
 .end_space {
@@ -32,26 +33,29 @@ body {
 
 
 .cell {
+    display: inline-block !important;
     background: #FFF;
     z-index: 1;
     box-shadow: black 0px 0px 5px 0px;
 }
 
+.node-input {
+}
 
-
-
-.input-var-div {
-	background-color: white;
-	padding: 10px;
-	margin: 5px;
-	height: 10px;
-	border: 2px solid black;
-	border-radius: 10px;
-	text-align: left;
+.node-input input {
+    width: 100px;
 }
 
 
-
+.node-input::before, .node-output::after {
+    content: '';
+    width: 10px;
+    height: 10px;
+    border-radius: 100%;
+    background: red;
+    vertical-align: middle;
+    border: 1px solid green;
+}
 
 
 
