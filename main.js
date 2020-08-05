@@ -49,11 +49,12 @@ function addToolMenu(node) {
 
 // converts a standard jupyter cell (DOM element) to a node with full functionality
 function cellToNode(cell_obj) {
-    cell = cell_obj.element[0]; // get div that this is in
+    const cell = cell_obj.element[0]; // get div that this is in
     // make cell draggable and resiazble
     $(cell).resizable({
         minWidth: 200,
-        minHeight: 42
+        minHeight: 42,
+        handles: 'e, w'
     });
     $(cell).draggable();
 
@@ -62,7 +63,7 @@ function cellToNode(cell_obj) {
     addToolMenu(cell);
 
     if (cell_obj.metadata.nodes) {
-	$(cell).css('position', 'absolute');
+	    $(cell).css('position', 'absolute');
         $(cell).css('top',   cell_obj.metadata.nodes.boundingBox.top);
         $(cell).css('left',  cell_obj.metadata.nodes.boundingBox.left);
         $(cell).css('width', cell_obj.metadata.nodes.boundingBox.width);
@@ -82,13 +83,12 @@ function cellToNode(cell_obj) {
         $(this).parent().append($(this));
         this.click();
     });
-    cell.addEventListener('mouseup', function(){
-	cell_obj.metadata.nodes = {};
+    cell.addEventListener('mouseup', function(e){
+	    cell_obj.metadata.nodes = {};
         cell_obj.metadata.nodes.boundingBox = {};
-	cell_obj.metadata.nodes.foo = "test";
-	cell_obj.metadata.nodes.boundingBox.top = cell.offsetTop;
-	cell_obj.metadata.nodes.boundingBox.left = cell.offsetLeft;
-	cell_obj.metadata.nodes.boundingBox.width = cell.offsetWidth;
+        cell_obj.metadata.nodes.boundingBox.top = cell.offsetTop;
+        cell_obj.metadata.nodes.boundingBox.left = cell.offsetLeft;
+        cell_obj.metadata.nodes.boundingBox.width = cell.offsetWidth;
     });
 }
 
