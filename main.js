@@ -67,26 +67,6 @@ function makeDraggable(node) {
 
 
 
-
-function load_css (name) {
-    $('<link/>').attr({
-        type: 'text/css',
-        rel: 'stylesheet',
-        href: requirejs.toUrl(name)
-    }).appendTo('head');
-}
-
-
-console.log(requirejs.toUrl('./style.css'))
-
-
-load_css('./style.css');
-
-
-
-
-
-
 function addPins(node) {
 
     function makePin(x, y) {
@@ -131,41 +111,40 @@ function addToolMenu(node) {
 
 
 
-
 /**
 
 
-function getCoords(elem) { // crossbrowser version
-var box = elem.getBoundingClientRect();
+function getCoords(elem) { // crossbrowser coord finder from stackoverflow
+    var box = elem.getBoundingClientRect();
 
-var body = document.body;
-var docEl = document.documentElement;
+    var body = document.body;
+    var docEl = document.documentElement;
 
-var scrollTop = window.pageYOffset || docEl.scrollTop || body.scrollTop;
-var scrollLeft = window.pageXOffset || docEl.scrollLeft || body.scrollLeft;
+    var scrollTop = window.pageYOffset || docEl.scrollTop || body.scrollTop;
+    var scrollLeft = window.pageXOffset || docEl.scrollLeft || body.scrollLeft;
 
-var clientTop = docEl.clientTop || body.clientTop || 0;
-var clientLeft = docEl.clientLeft || body.clientLeft || 0;
+    var clientTop = docEl.clientTop || body.clientTop || 0;
+    var clientLeft = docEl.clientLeft || body.clientLeft || 0;
 
-var top  = box.top +  scrollTop - clientTop;
-var left = box.left + scrollLeft - clientLeft;
+    var top  = box.top +  scrollTop - clientTop;
+    var left = box.left + scrollLeft - clientLeft;
 
-//     console.log(top, left);
-
-return [top, left];
+    return [top, left];
 }
 
 */
 
 
-// add custom stylesheet
-$('head').append('<link rel="stylesheet" href="/files/style.css">');
+
+// attach custom stylesheet
+$('<link/>').attr('type', 'text/css').attr('rel', 'stylesheet').attr('href', requirejs.toUrl('./style.css')).appendTo('head');
+
 
 // add jquery ui
-$('body').append('<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>');
+//$('body').append('<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>');
+$('<script>').attr('src', "https://code.jquery.com/ui/1.12.1/jquery-ui.js").appendTo('body');
 
-
-// make cells draggable and resizable
+// make cells movable and resizable
 $('.cell').draggable();
 $('.cell').resizable();
 
@@ -184,43 +163,28 @@ $('.cell').resizable();
 //$('#notebook-container').css('box-shadow', 'none');
 
 
-// turn all the cells into floating movable nodes=
+// add pins, change context menu, and add focusing functionality to existing nodes
 for (cell of $('.cell').get().reverse()) {
-    //     c = getCoords(cell); // get curent coordinates of the cell
-    //     cell.css('top', c[0]);
-    //     cell.css('left', c[1]);
     addPins(cell);
     addToolMenu(cell);
+
     const top  = cell.offsetTop;//getBoundingClientRect().top;
     const left = cell.offsetLeft;//getBoundingClientRect().left;
     const width = cell.offsetWidth;
-//    console.log(cell);
-//    console.log(cell.getBoundingClientRect());
     $(cell).css('position', 'absolute');
     $(cell).css('top',   top);
     $(cell).css('left',  left);
     $(cell).css('width', width)
 
-
-
-    cell.addEventListener('mousedown', function(){
     // bring element to top when clicked
-    $(this).parent().append($(this));
+    cell.addEventListener('mousedown', function(){
+        $(this).parent().append($(this));
         this.click();
     });
 }
 
 
 
-
-// ncontainer.style.background = 'transparent';
-// ncontainer.style.boxShadow = 'none';
-
-
-
-
-
-// const background = document.getElementById('notebook');
 
 // (function() {
 //     let x1; let y1;
@@ -244,12 +208,4 @@ for (cell of $('.cell').get().reverse()) {
 
 
 //document.getElementById('notebook-container').size = 10000000;
-
-//addNode(document.getElementById('notebook_panel'), "test node", [new InputVariable("x"), new InputVariable("y")], new Cell()); // add new stuff
-
-//alert("run");
-
-
-
-
 });
