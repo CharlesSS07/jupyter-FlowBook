@@ -48,7 +48,8 @@ function addToolMenu(node) {
 
 
 // converts a standard jupyter cell (DOM element) to a node with full functionality
-function cellToNode(cell) {
+function cellToNode(cell_obj) {
+    cell = cell_obj.element[0]; // get div that this is in
     // make cell draggable and resiazble
     $(cell).resizable({
         minWidth: 200,
@@ -60,19 +61,34 @@ function cellToNode(cell) {
     addPins(cell);
     addToolMenu(cell);
 
-    // keep position when converting to focusable
-    const top  = cell.offsetTop;
-    const left = cell.offsetLeft;
-    const width = cell.offsetWidth;
-    $(cell).css('position', 'absolute');
-    $(cell).css('top',   top);
-    $(cell).css('left',  left);
-    $(cell).css('width', width)
+    if (cell_obj.metadata.nodes) {
+	$(cell).css('position', 'absolute');
+        $(cell).css('top',   cell_obj.metadata.nodes.boundingBox.top);
+        $(cell).css('left',  cell_obj.metadata.nodes.boundingBox.left);
+        $(cell).css('width', cell_obj.metadata.nodes.boundingBox.width);
+    } else {
+        // keep position when converting to focusable
+        const top  = cell.offsetTop;
+        const left = cell.offsetLeft;
+        const width = cell.offsetWidth;
+        $(cell).css('position', 'absolute');
+        $(cell).css('top',   top);
+        $(cell).css('left',  left);
+        $(cell).css('width', width);
+    }
 
     // bring element to top when clicked
     cell.addEventListener('mousedown', function(){
         $(this).parent().append($(this));
         this.click();
+    });
+    cell.addEventListener('mouseup', function(){
+	cell_obj.metadata.nodes = {};
+        cell_obj.metadata.nodes.boundingBox = {};
+	cell_obj.metadata.nodes.foo = "test";
+	cell_obj.metadata.nodes.boundingBox.top = cell.offsetTop;
+	cell_obj.metadata.nodes.boundingBox.left = cell.offsetLeft;
+	cell_obj.metadata.nodes.boundingBox.width = cell.offsetWidth;
     });
 }
 
@@ -86,13 +102,13 @@ $('<script>').attr('src', "https://code.jquery.com/ui/1.12.1/jquery-ui.js").appe
 
 
 // convert every existing cell to a node
-for (cell of $('.cell').get().reverse()) {
+for (cell of Jupyter.notebook.get_cells().reverse()) {
     cellToNode(cell);
 }
 
 // convert created cells to nodes
 Jupyter.notebook.events.on('create.Cell', (event, data)=>{
-    cellToNode(data.cell.element[0]);
+    cellToNode(data.cell);
 });
 
 
