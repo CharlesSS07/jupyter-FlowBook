@@ -88,7 +88,6 @@ for (cell of $('.cell').get().reverse()) {
 }
 
 // convert created cells to nodes
-console.log(Jupyter.notebook.events.bind);
 Jupyter.notebook.events.on('create.Cell', (event, data)=>{
     cellToNode(data.cell.element[0]);
 });
