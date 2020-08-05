@@ -50,7 +50,10 @@ function addToolMenu(node) {
 // converts a standard jupyter cell (DOM element) to a node with full functionality
 function cellToNode(cell) {
     // make cell draggable and resiazble
-    $(cell).resizable();
+    $(cell).resizable({
+        minWidth: 200,
+        minHeight: 42
+    });
     $(cell).draggable();
 
     // add ui elements to cell
