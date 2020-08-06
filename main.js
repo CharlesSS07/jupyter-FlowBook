@@ -109,8 +109,8 @@ function cellToNode(cell_obj) {
     addToolMenu(cell);
 
     // position nodes according to metadata
-    if (!cell_obj.metadata.nodes) {
-        saveNodeMetaData();
+    if (!cell_obj.metadata.nodes.boundingBox) {
+        saveNodeMetadata();
     }
     $(cell).css('position', 'absolute');
     $(cell).css('top',   cell_obj.metadata.nodes.boundingBox.top);
