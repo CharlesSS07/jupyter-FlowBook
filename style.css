@@ -13,8 +13,13 @@ body {
 }
 
 
+#site {
+    overflow: hidden;
+}
+
 #notebook {
     cursor: grab;
+    overflow: visible;
 }
 
 
@@ -23,24 +28,38 @@ body {
     width: 0;
     height: 0;
     padding: 0;
+    transform: matrix(1, 0, 0, 1, 0, 0);
 }
 
 .end_space {
     width: 0;
-    hegiht: 0;
+    height: 0;
 }
 
 
 
 .cell {
+    position: absolute !important;
     display: inline-block !important;
     background: #FFF;
     z-index: 1;
     box-shadow: black 0px 0px 5px 0px;
 }
 
-.node-input {
+.node-resize-handle {
+    content: '';
+    width: 10px;
+    height: 100%;
+    background-color: #F0F9;
+    display: inherit;
+    position: absolute;
+    top: 0px;
+    cursor: col-resize;
+    margin: 0 -5px;
 }
+/* .cell::after { right: 0 }
+.cell::before { left: 0 } */
+
 
 .node-input input {
     width: 100px;
