@@ -1,10 +1,86 @@
 define(['base/js/namespace','base/js/events', 'require'], function(Jupyter, events, requirejs) {
 
+function main() {
+    // attach custom stylesheet
+    $('<link/>').attr('type', 'text/css').attr('rel', 'stylesheet').attr('href', requirejs.toUrl('./style.css')).appendTo('head');
+
+
+    // convert every existing cell to a node
+    for (cell of Jupyter.notebook.get_cells().reverse()) {
+        cellToNode(cell);
+    }
+
+
+    // convert newly created cells to nodes
+    events.on('create.Cell', (event, data)=>{
+        cellToNode(data.cell);
+    });
+
+
+    // zooming/panning around notebook
+    loadView(); // load saved zoom/pan location
+    addPanListener(); // listen for mouse drags to pan around
+    addZoomListener(); // listen for scrolling to zoom
+}
 
 
 
 
 
+/**
+ * converts a jupyter notebook cell to a node by making it draggable and resizable, and adding titles and nodes and metadata
+ * @param cell_obj a jupyter notebook cell object
+ * */
+function cellToNode(cell_obj) {
+    const cell = cell_obj.element[0]; // get element
+
+    // create node data in metadata
+    if (!cell_obj.metadata.nodes) cell_obj.metadata.nodes = {};
+
+    // make cell movable and resizable
+    makeDraggable(cell);
+    makeResizable(cell);
+
+    // write node metadata if it doesn't have any yet
+    if (!cell_obj.metadata.nodes.boundingBox) {
+        saveNodeMetadata();
+    }
+
+    // set cell position according to metadata
+    $(cell).css('top',   cell_obj.metadata.nodes.boundingBox.top);
+    $(cell).css('left',  cell_obj.metadata.nodes.boundingBox.left);
+    $(cell).css('width', cell_obj.metadata.nodes.boundingBox.width);
+    
+    // save new position when changed
+    cell.addEventListener('mouseup', function(e){
+        saveNodeMetadata();
+    });
+
+    function saveNodeMetadata() {
+        // save position
+        if (!cell_obj.metadata.nodes.boundingBox) cell_obj.metadata.nodes.boundingBox = {};
+        cell_obj.metadata.nodes.boundingBox.top = cell.offsetTop;
+        cell_obj.metadata.nodes.boundingBox.left = cell.offsetLeft;
+        cell_obj.metadata.nodes.boundingBox.width = cell.offsetWidth;
+    }
+
+    // ad custom context menu  of tools/actions for cell
+    addToolMenu(cell);
+
+    // code cells get pins and names
+    if (cell_obj instanceof Jupyter.CodeCell) {
+        addPins(cell_obj);
+        addName(cell_obj);
+    }
+}
+
+
+
+
+/**
+ * makes a cell movable by dragging on blank space
+ * @param cell an html .cell element in a jupyter notebook to make movable
+ * */
 function makeDraggable(cell) {
     let deltaX = 0, deltaY = 0, x1 = 0, y1 = 0;
     cell.addEventListener('mousedown', function(event){
@@ -15,7 +91,7 @@ function makeDraggable(cell) {
         const parent = cell.parentElement; // get elements parent
         cell.remove(); // remove element
         parent.append(cell); // add it back, to the top
-        if (event.target.cellName == 'PRE' || event.target.cellName == 'SPAN' || event.target.classList.contains('node-resize-handle')) {
+        if (event.target.nodeName == 'PRE' || event.target.nodeName == 'SPAN' || event.target.classList.contains('node-resize-handle') || event.target.nodeName == 'INPUT') {
             // dont activate dragging if user is selecting text or trying to resize with handle
         } else {
             event.preventDefault();
@@ -41,6 +117,10 @@ function makeDraggable(cell) {
     });
 }
 
+/** 
+ * makes a cell resizable by dragging the edges
+ * @param cell an html .cell element in a jupyter notebook to make resizable
+ * */
 function makeResizable(cell) {
     const rightHandle = document.createElement('div'); // right resizing handle
     const leftHandle  = document.createElement('div'); // left resizing handle
@@ -88,17 +168,32 @@ function makeResizable(cell) {
 
 
 
-
-
-
-function addTitle(cell_obj) {
-    if (!cell_obj.metadata.nodes.title) cell_obj.metadata.nodes.title = '';
-    $('<div>').attr('class', 'node-title').html(cell_obj.metadata.nodes.title).prependTo(cell_obj.element);
+/** 
+ * adds context menu of actions for a cell when right-clicked
+ * @param cell an html .cell element in a jupyter notebook to have custom context menu added to
+ * */
+function addToolMenu(cell) {
+    cell.oncontextmenu = function (e) {
+        e = e || window.event;
+        if (!e.shiftKey) { // display normal context menu when shift key is held
+            e.preventDefault();
+            cell.click(); // select node
+            $('#maintoolbar').css('display', 'inline-block');
+            $('#maintoolbar').css('top', e.clientY + 'px');
+            $('#maintoolbar').css('left', e.clientX + 'px');
+            document.onclick = function () {
+                $('#maintoolbar').css('display', 'none');
+                document.onclick = null;
+            };
+        }
+    };
 }
 
 
-
-
+/** 
+ * adds inputs and outputs and corresponding pins to cell
+ * @param cell a html .cell element in a jupyter notebook to have pins added to
+ * */
 function addPins(cell_obj) {
     if (!cell_obj.metadata.nodes.inputs) cell_obj.metadata.nodes.inputs = [];
     if (!cell_obj.metadata.nodes.outputs) cell_obj.metadata.nodes.outputs = [];
@@ -112,198 +207,113 @@ function addPins(cell_obj) {
 
     const addInput = $('<input>').attr('type', 'button').val('+');
     $('<div>').appendTo(inputsdiv).append(addInput);
-    addInput.click(function(e){
+    addInput[0].onclick = function(e){
         console.log(e);
         console.log('add input');
         cell_obj.metadata.nodes.inputs.push({'name':''})
-    });
+    };
 
 
 
 
     const outputsdiv = $('<div>').attr('class', 'node-outputs').appendTo(cell_obj.element);
-    for (let pin of cell_obj.metadata.nodes.outputs) {
-        $('<div>').attr('class', 'node-output').append($('<input>').val(pin.name)).appendTo(outputsdiv);
-    }
+    // for (let pin of cell_obj.metadata.nodes.outputs) {
+        // $('<div>').attr('class', 'node-output').append($('<input>').val(pin.name)).appendTo(outputsdiv);
+    // }
+    $('<div>').attr('class', 'node-output').appendTo(outputsdiv);
 
-    const addOutput = $('<input>').attr('type', 'button').val('+');
-    $('<div>').appendTo(outputsdiv).append(addOutput);;
-    addOutput.click(function(e){
-        console.log('add output');
-        cell_obj.metadata.nodes.outputs.push({'name':''})
-    });
-}
-
-
-
-
-
-
-
-function addToolMenu(node) {
-    node.oncontextmenu = showToolMenu;
-
-    function showToolMenu(e) {
-        e = e || window.event;
-        if (!e.shiftKey) {
-            e.preventDefault();
-            node.click(); // select node
-            $('#maintoolbar').css('display', 'inline-block');
-            $('#maintoolbar').css('top', e.clientY + 'px');
-            $('#maintoolbar').css('left', e.clientX + 'px');
-            document.addEventListener("click", hideToolMenu);
-        }
-    }
-
-    function hideToolMenu(e) {
-        $('#maintoolbar').css('display', 'none');
-    }
-}
-
-
-
-
-// converts a standard jupyter cell (DOM element) to a node with full functionality
-function cellToNode(cell_obj) {
-    const cell = cell_obj.element[0]; // get element
-
-    // create node data in metadata
-    if (!cell_obj.metadata.nodes) cell_obj.metadata.nodes = {};
-
-
-    makeDraggable(cell);
-    makeResizable(cell);
-
-    // add ui elements to cell
-    addPins(cell_obj);
-    addTitle(cell_obj);
-    addToolMenu(cell);
-
-    // position nodes according to metadata
-    if (!cell_obj.metadata.nodes.boundingBox) {
-        saveNodeMetadata();
-    }
-
-    // $(cell).css('position', 'absolute');
-    $(cell).css('top',   cell_obj.metadata.nodes.boundingBox.top);
-    $(cell).css('left',  cell_obj.metadata.nodes.boundingBox.left);
-    $(cell).css('width', cell_obj.metadata.nodes.boundingBox.width);
-    
-
-    // bring element to top when clicked
-    // cell.addEventListener('mousedown', function(){
-    //     $(this).parent().append($(this)); // move cell to the end of div, making it display over the others
-    //     this.click(); // activate other click functionality (usually cancelled by draggable)
+    // const addOutput = $('<input>').attr('type', 'button').val('+');
+    // $('<div>').appendTo(outputsdiv).append(addOutput);;
+    // addOutput.click(function(e){
+    //     console.log('add output');
+    //     cell_obj.metadata.nodes.outputs.push({'name':''})
     // });
-    cell.addEventListener('mouseup', function(e){
-        saveNodeMetadata();
-    });
-
-    function saveNodeMetadata() {
-        // save position
-        if (!cell_obj.metadata.nodes.boundingBox) cell_obj.metadata.nodes.boundingBox = {};
-        cell_obj.metadata.nodes.boundingBox.top = cell.offsetTop;
-        cell_obj.metadata.nodes.boundingBox.left = cell.offsetLeft;
-        cell_obj.metadata.nodes.boundingBox.width = cell.offsetWidth;
-    }
 }
 
 
-// attach custom stylesheet
-$('<link/>').attr('type', 'text/css').attr('rel', 'stylesheet').attr('href', requirejs.toUrl('./style.css')).appendTo('head');
-
-
-// add jquery ui
-$('<script>').attr('src', "https://code.jquery.com/ui/1.12.1/jquery-ui.js").appendTo('body');
-
-
-// convert every existing cell to a node
-for (cell of Jupyter.notebook.get_cells().reverse()) {
-    cellToNode(cell);
+/** 
+ * adds a name to a cell displayed at the top as a header of the cell
+ * @param cell an html .cell element in a jupyter notebook to have a name header added to
+ * */
+function addName(cell_obj) {
+    if (!cell_obj.metadata.nodes.name) cell_obj.metadata.nodes.name = 'node';
+    $('<div>').attr('class', 'node-name').html(cell_obj.metadata.nodes.name).prependTo(cell_obj.element);
 }
 
-// convert newly created cells to nodes
-Jupyter.notebook.events.on('create.Cell', (event, data)=>{
-    cellToNode(data.cell);
-});
+
+
+
+
+
+
+
+
+
 
 
 // panning/zooming functionality
 
-// set starting view from metadata
-if (!Jupyter.notebook.metadata.nodes) Jupyter.notebook.metadata.nodes = {};
-if (!Jupyter.notebook.metadata.nodes.view) Jupyter.notebook.metadata.nodes.view = {};
-// $('#notebook-container').css('top',  Jupyter.notebook.metadata.nodes.view.top  || 0);
-// $('#notebook-container').css('left', Jupyter.notebook.metadata.nodes.view.left || 0);
-// $('#notebook-container').css('zoom', Jupyter.notebook.metadata.nodes.view.zoom || 1);
-$('#notebook-container').css('transform',  `matrix(
-    ${Jupyter.notebook.metadata.nodes.view.zoom}, 0,
-    0, ${Jupyter.notebook.metadata.nodes.view.zoom},
-    ${Jupyter.notebook.metadata.nodes.view.left}, ${Jupyter.notebook.metadata.nodes.view.top})`);
+/** 
+ * set initial view (zoom/pan location) from saved metadata
+ * */
+function loadView() {
+    if (!Jupyter.notebook.metadata.nodes) Jupyter.notebook.metadata.nodes = {};
+    if (!Jupyter.notebook.metadata.nodes.view) Jupyter.notebook.metadata.nodes.view = {};
+    $('#notebook-container').css('transform',  `matrix(
+        ${Jupyter.notebook.metadata.nodes.view.zoom}, 0,
+        0, ${Jupyter.notebook.metadata.nodes.view.zoom},
+        ${Jupyter.notebook.metadata.nodes.view.left}, ${Jupyter.notebook.metadata.nodes.view.top})`);
+}
 
 
-// create pan/zoom event listeners
+/** 
+ * add event listener for mouse dragging on the background to pan around the notebook
+ * */
+function addPanListener() {
+    document.addEventListener('mousedown', function(e1) {
+        let x1 = 0; let y1 = 0; let deltaX = 0; let deltaY = 0;
+        if (e1.target.id == 'notebook') { // when clicking on the background
+            x1 = e1.x;
+            y1 = e1.y;
+            $('#notebook').css('cursor', 'grabbing'); // show cursor grabbing page when panning
+            document.onmousemove = function(e) { // pan based off mouse movement
+                deltaX = e.x - x1;
+                deltaY = e.y - y1;
+                
+                x1 = e.x;
+                y1 = e.y;
 
-
-// panning
-document.addEventListener('mousedown', function(e) {
-    let x1 = 0; let y1 = 0; /*let startX = 0; let startY = 0;*/ let deltaX = 0; let deltaY = 0;
-    if (e.target.id == 'notebook') { // when clicking on the background
-        x1 = e.x;// - $('#notebook-container').offset().left;
-        y1 = e.y;// - $('#notebook-container').offset().top - $('#notebook-container')[0].offsetTop;
-        // startX = $('#notebook-container')[0].offsetLeft;
-        // startY = $('#notebook-container')[0].offsetTop;
-        $('#notebook').css('cursor', 'grabbing');
-        // start panning until mouse goes back up
-        document.onmousemove = function(e) { // pan based off mouse movement
-            deltaX = e.x - x1;
-            deltaY = e.y - y1;
-            
-        //    $('#notebook-container').css('top', startY+deltaY);///$('#notebook-container').css('zoom'))
-        //    $('#notebook-container').css('left', startX+deltaX);///$('#notebook-container').css('zoom'));
-
-            
-            x1 = e.x;
-            y1 = e.y;
-
-
-            // $('#notebook-container').css('top', startY+deltaY);///$('#notebook-container').css('zoom'))
-            // $('#notebook-container').css('left', startX+deltaX);///$('#notebook-container').css('zoom'));
-
-            $('#notebook-container').css('transform', `${$('#notebook-container').css('transform')} translate(${deltaX/Jupyter.notebook.metadata.nodes.view.zoom}px,${deltaY/Jupyter.notebook.metadata.nodes.view.zoom}px)`)
-        };
-        document.onmouseup = function() { // stop panning
-            // remove listeners
-            document.onmousemove = null;
-            document.onmouseup = null;
-            // save position
-            Jupyter.notebook.metadata.nodes.view.top  = matrixToArray($('#notebook-container').css('transform'))[5];
-            Jupyter.notebook.metadata.nodes.view.left = matrixToArray($('#notebook-container').css('transform'))[4];
-            // change cursor
-            $('#notebook').css('cursor', 'grab');
-        };
-    }
-});
+                $('#notebook-container').css('transform', `${$('#notebook-container').css('transform')} translate(${deltaX/Jupyter.notebook.metadata.nodes.view.zoom}px,${deltaY/Jupyter.notebook.metadata.nodes.view.zoom}px)`)
+            };
+            document.onmouseup = function() { // stop panning
+                // remove listeners
+                document.onmousemove = null;
+                document.onmouseup = null;
+                // save position
+                Jupyter.notebook.metadata.nodes.view.top  = matrixToArray($('#notebook-container').css('transform'))[5];
+                Jupyter.notebook.metadata.nodes.view.left = matrixToArray($('#notebook-container').css('transform'))[4];
+                // change cursor
+                $('#notebook').css('cursor', 'grab');
+            };
+        }
+    });
+}
 
 
 
-// zooming
-document.addEventListener('mousewheel', function(e) {
-    if (e.target.id == 'notebook') {
-        // // zoom exponentially
-        // $('#notebook-container').css('zoom', $('#notebook-container').css('zoom')*(2**(-e.deltaY/500)));
-        // // save zoom position
-        // Jupyter.notebook.metadata.nodes.view.zoom  = $('#notebook-container').css('zoom');
-
-        const dzoom = (2**(-e.deltaY/500));
-        Jupyter.notebook.metadata.nodes.view.zoom *= dzoom;
-        $('#notebook-container').css('transform', `${$('#notebook-container').css('transform')} scale(${dzoom})`);
-        $('#notebook-container').css('font-size', `${parseInt($('#notebook-container').css('font-size'))/dzoom}`);
-
-        $('.CodeMirror-size').css('zoom', $('.CodeMirror-size').css('zoom')/dzoom);
-    }
-});
-
+/** 
+ * add event listener for mouse wheel scrolling on the background to zoom in/out on the notebook
+ * */
+function addZoomListener() {
+    document.addEventListener('mousewheel', function(e) {
+        if (e.target.id == 'notebook') {
+            const dzoom = (2**(-e.deltaY/500)); // multiply zoom by exponential of scroll to scale page by scroll amount
+            Jupyter.notebook.metadata.nodes.view.zoom *= dzoom;
+            $('#notebook-container').css('transform', `${$('#notebook-container').css('transform')} scale(${dzoom})`);
+            $('#notebook-container').css('font-size', `${parseInt($('#notebook-container').css('font-size'))/dzoom}`);
+        }
+    });
+}
 
 
 
@@ -311,9 +321,13 @@ document.addEventListener('mousewheel', function(e) {
 
 
 function matrixToArray(str) {
+    // extract parameters from string like 'matrix(1, 2, 3, 4, 5, 6)'
     return str.match(/(-?[0-9\.]+)/g);
 }
 
 
 
+
+
+main();
 });
