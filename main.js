@@ -122,6 +122,7 @@ function makeDraggable(cell) {
  * @param cell an html .cell element in a jupyter notebook to make resizable
  * */
 function makeResizable(cell) {
+    // create and add an invisible element on each side which will be dragged to resize the cell
     const rightHandle = document.createElement('div'); // right resizing handle
     const leftHandle  = document.createElement('div'); // left resizing handle
 
@@ -134,6 +135,7 @@ function makeResizable(cell) {
     cell.appendChild(rightHandle);
     cell.appendChild(leftHandle);
     
+    // drag listener for right handle
     rightHandle.onmousedown = function(e1){
         e1.preventDefault(); // don't drag, just resize
         const x1 = e1.x/Jupyter.notebook.metadata.nodes.view.zoom - parseInt(cell.style.width);
@@ -148,6 +150,7 @@ function makeResizable(cell) {
         }
     };
 
+    // drag listener for left handle
     leftHandle.onmousedown = function(e1){
         e1.preventDefault(); // don't drag, just resize
         const x1 = e1.x/Jupyter.notebook.metadata.nodes.view.zoom - parseInt(cell.style.left);
@@ -195,39 +198,86 @@ function addToolMenu(cell) {
  * @param cell a html .cell element in a jupyter notebook to have pins added to
  * */
 function addPins(cell_obj) {
-    if (!cell_obj.metadata.nodes.inputs) cell_obj.metadata.nodes.inputs = [];
-    if (!cell_obj.metadata.nodes.outputs) cell_obj.metadata.nodes.outputs = [];
+    if (!cell_obj.metadata.nodes.input)  cell_obj.metadata.nodes.input = [];
+    if (!cell_obj.metadata.nodes.output) cell_obj.metadata.nodes.output = [];
 
-
-
-    const inputsdiv = $('<div>').attr('class', 'node-inputs').prependTo(cell_obj.element);
-    for (let pin of cell_obj.metadata.nodes.inputs) {
-        $('<div>').attr('class', 'node-input').append($('<input>').val(pin.name)).appendTo(inputsdiv);
-    }
+    const inputsdiv = $('<div>').addClass('node-inputs').prependTo(cell_obj.element);
 
     const addInput = $('<input>').attr('type', 'button').val('+');
     $('<div>').appendTo(inputsdiv).append(addInput);
-    addInput[0].onclick = function(e){
-        console.log(e);
-        console.log('add input');
-        cell_obj.metadata.nodes.inputs.push({'name':''})
-    };
+    addInput.mousedown(function(e){
+        makePin('input').appendTo(inputsdiv);
+    });
+    
+    for (let i in cell_obj.metadata.nodes.inputs) {
+        makePin('input').appendTo(inputsdiv);
+    }
+
+
+
+    const outputsdiv = $('<div>').addClass('node-outputs').appendTo(cell_obj.element);
+
+    const addOutput = $('<input>').attr('type', 'button').val('+');
+    $('<div>').appendTo(outputsdiv).append(addOutput);;
+    addOutput.mousedown(function(e){
+        makePin('output').appendTo(outputsdiv);
+    });
+    
+    for (let i in cell_obj.metadata.nodes.outputs) {
+        makePin('output').appendTo(outputsdiv);
+    }
+
+    
+
+
+
+    function makePin(io) {
+        if ('input' != io) io = 'output';
+        const ind = cell_obj.metadata.nodes[io].push({}) - 1;
+        const nameInput = $('<input>');
+        nameInput.focusin(function(){
+            // change to edit mode so keystrokes are not interpreted as commands
+            cell_obj.events.trigger('edit_mode.Cell', {cell:cell_obj});
+        });
+        nameInput.on('input', function() {
+            // edit the pin name to value of text field
+            cell_obj.metadata.nodes[io][ind].name = nameInput.val();
+        });
+        nameInput.val(cell_obj.metadata.nodes[io][ind].name || '');
+        const pin = $('<div>').addClass(`node-${io}-pin`);
+        addWireDragListener(pin[0]);
+        return $('<div>').append(pin).append(nameInput).addClass(`node-${io}`);
+    }
 
 
 
 
-    const outputsdiv = $('<div>').attr('class', 'node-outputs').appendTo(cell_obj.element);
-    // for (let pin of cell_obj.metadata.nodes.outputs) {
-        // $('<div>').attr('class', 'node-output').append($('<input>').val(pin.name)).appendTo(outputsdiv);
-    // }
-    $('<div>').attr('class', 'node-output').appendTo(outputsdiv);
+    function addWireDragListener(pin) {
+        pin.addEventListener('mousedown', function(e1){
+            // start dragging wire from this pin
+            const line = $('<line>').appendTo($('<svg>').addClass('node-wire-svg').appendTo($('#notebook-container')));
+            line.attr('x1', $(pin).position().left);
+            line.attr('y1', $(pin).position().top);
+            const opposite = pin.classList.contains('node-input-pin') ? 'node-output-pin' : 'node-input-pin';
 
-    // const addOutput = $('<input>').attr('type', 'button').val('+');
-    // $('<div>').appendTo(outputsdiv).append(addOutput);;
-    // addOutput.click(function(e){
-    //     console.log('add output');
-    //     cell_obj.metadata.nodes.outputs.push({'name':''})
-    // });
+            document.onmousemove = function(e) {
+                // point wire to end of mouse while moving
+                line.attr('x2', e.x);
+                line.attr('y2', e.y);
+            };
+            document.onmouseup = function(e) {
+                // if dropped on opposite pin type, connect
+                if (e.target.classList.contains(opposite)) {
+                    line.attr('x2', $(e.target).position().left);
+                    line.attr('y2', $(e.target).position().top);
+                } else {
+                    line.parent().remove(); // completely remove svg
+                }
+                document.onmousemove = null;
+                document.onmouseup = null;
+            }
+        });
+    }
 }
 
 
@@ -236,8 +286,17 @@ function addPins(cell_obj) {
  * @param cell an html .cell element in a jupyter notebook to have a name header added to
  * */
 function addName(cell_obj) {
-    if (!cell_obj.metadata.nodes.name) cell_obj.metadata.nodes.name = 'node';
-    $('<div>').attr('class', 'node-name').html(cell_obj.metadata.nodes.name).prependTo(cell_obj.element);
+    const nameInput = $('<input>');
+    nameInput.focusin(function(){
+        // change to edit mode so keystrokes are not interpreted as commands
+        cell_obj.events.trigger('edit_mode.Cell', {cell:cell_obj});
+    });
+    nameInput.on('input', function() {
+        // edit the node name to value of text field
+        cell_obj.metadata.nodes.name = nameInput.val();
+    });
+    nameInput.val(cell_obj.metadata.nodes.name || 'node');
+    $('<div>').addClass('node-name').append(nameInput).prependTo(cell_obj.element);
 }
 
 

@@ -49,9 +49,29 @@
     margin: 0 -5px;
 }
 
-.node-input input {
-    width: 100px;
+.node-input, .node-output, .node-name {
+    align-items: center;
+    margin: 5px 0;
+    display: flex;
 }
+.node-output {
+    flex-direction: row-reverse;
+}
+
+.node-input input, .node-output input {
+    flex: 1 1 auto;
+    border: none;
+    box-shadow: none;
+    background: transparent;
+}
+.node-output input {
+    text-align: right;
+}
+
+.node-input .node-pin, .node-output .node-pin {
+    flex: 0 0 auto;
+}
+
 
 /* .node-input-pin, .node-output-pin {
     width: 10px;
@@ -73,11 +93,17 @@
 
 
 
-.node-pin {
+.node-input-pin, .node-output-pin {
+    display: inline-block;
     width: 10px;
     height: 10px;
+    margin: 3px;
     border-radius: 100%;
     background: red;
     vertical-align: middle;
-    border: 1px solid green;
+    border: 2px solid green;
+}
+.node-output-pin {
+    background-color: green;
+    border-color: red;
 }
