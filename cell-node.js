@@ -60,7 +60,7 @@ class NodeInput {
 	}
 	onSetInputName(oldName, newName) {
 		// set the variable name of the input
-		tmp = this.inputs[oldName];
+		const tmp = this.inputs[oldName];
 		delete this.inputs[oldName];
 		this.inputs[newName] = tmp;
 	}
