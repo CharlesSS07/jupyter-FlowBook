@@ -1,15 +1,19 @@
 define(['base/js/namespace','base/js/events', 'require'], function(Jupyter, events, requirejs) {
 
+let nodeManager;
+
 function main() {
     // attach custom stylesheet
     $('<link/>').attr('type', 'text/css').attr('rel', 'stylesheet').attr('href', requirejs.toUrl('./style.css')).appendTo('head');
 
+    // import cell-node.js
+    $('<script>').attr('src', requirejs.toUrl('./cell-node.js')).appendTo('body');
+    nodeManager = new NodeManager();
 
     // convert every existing cell to a node
     for (cell of Jupyter.notebook.get_cells().reverse()) {
         cellToNode(cell);
     }
-
 
     // convert newly created cells to nodes
     events.on('create.Cell', (event, data)=>{
@@ -72,6 +76,8 @@ function cellToNode(cell_obj) {
         addPins(cell_obj);
         addName(cell_obj);
     }
+
+    cell_obj.metadata.node = nodeManager.newNode(cell_obj);
 }
 
 
@@ -255,21 +261,36 @@ function addPins(cell_obj) {
     function addWireDragListener(pin) {
         pin.addEventListener('mousedown', function(e1){
             // start dragging wire from this pin
-            const line = $('<line>').appendTo($('<svg>').addClass('node-wire-svg').appendTo($('#notebook-container')));
-            line.attr('x1', $(pin).position().left);
-            line.attr('y1', $(pin).position().top);
+            // const line = $('<line>').appendTo($('<svg>').addClass('node-wire-svg').appendTo($('#notebook-container')));
+            // line.attr('x1', $(pin).position().left);
+            // line.attr('y1', $(pin).position().top);
             const opposite = pin.classList.contains('node-input-pin') ? 'node-output-pin' : 'node-input-pin';
 
             document.onmousemove = function(e) {
                 // point wire to end of mouse while moving
-                line.attr('x2', e.x);
-                line.attr('y2', e.y);
+                // line.attr('x2', e.x);
+                // line.attr('y2', e.y);
             };
             document.onmouseup = function(e) {
                 // if dropped on opposite pin type, connect
                 if (e.target.classList.contains(opposite)) {
-                    line.attr('x2', $(e.target).position().left);
-                    line.attr('y2', $(e.target).position().top);
+                    // line.attr('x2', $(e.target).position().left);
+                    // line.attr('y2', $(e.target).position().top);
+                    const node1 = $(e.target).closest('.cell').data('cell').metadata.node;
+                    const node2 = $(pin).closest('.cell').data('cell').metadata.node;
+                    if (e.target.classList.contains('node-input-pin')) {
+                        const inputPinName = $(e.target).closest('.node-input').find('input').val();
+                        const inputNode = node1;
+                        const outputNode = node2;
+                    } else {
+                        const inputPinName = $(pin).closest('.node-input').find('input').val();
+                        const inputNode = node2;
+                        const outputNode = node1;
+                    }
+                    inputNode.getInputs().setInput(
+                        inputPinName,
+                        outputNode.getOutput(),
+                    )
                 } else {
                     line.parent().remove(); // completely remove svg
                 }
