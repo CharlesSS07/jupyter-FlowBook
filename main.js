@@ -36,6 +36,8 @@ function main() {
  * @param cell_obj a jupyter notebook cell object
  * */
 function cellToNode(cell_obj) {
+    cell_obj.metadata.node = nodeManager.newNode(cell_obj);
+
     const cell = cell_obj.element[0]; // get element
 
     // create node data in metadata
@@ -77,7 +79,7 @@ function cellToNode(cell_obj) {
         addName(cell_obj);
     }
 
-    cell_obj.metadata.node = nodeManager.newNode(cell_obj);
+    
 }
 
 
@@ -204,34 +206,22 @@ function addToolMenu(cell) {
  * @param cell a html .cell element in a jupyter notebook to have pins added to
  * */
 function addPins(cell_obj) {
-    if (!cell_obj.metadata.nodes.input)  cell_obj.metadata.nodes.input = [];
-    if (!cell_obj.metadata.nodes.output) cell_obj.metadata.nodes.output = [];
 
     const inputsdiv = $('<div>').addClass('node-inputs').prependTo(cell_obj.element);
-
-    const addInput = $('<input>').attr('type', 'button').val('+');
-    $('<div>').appendTo(inputsdiv).append(addInput);
-    addInput.mousedown(function(e){
-        makePin('input').appendTo(inputsdiv);
-    });
     
-    for (let i in cell_obj.metadata.nodes.inputs) {
-        makePin('input').appendTo(inputsdiv);
+    for (let input in cell_obj.metadata.node.getInputs().inputs) {
+        makePin('input').appendTo(inputsdiv).find('input').val(input);
     }
+    makePin('input').appendTo(inputsdiv); // extra input for adding new inputs
 
 
 
     const outputsdiv = $('<div>').addClass('node-outputs').appendTo(cell_obj.element);
 
-    const addOutput = $('<input>').attr('type', 'button').val('+');
-    $('<div>').appendTo(outputsdiv).append(addOutput);;
-    addOutput.mousedown(function(e){
-        makePin('output').appendTo(outputsdiv);
-    });
-    
-    for (let i in cell_obj.metadata.nodes.outputs) {
-        makePin('output').appendTo(outputsdiv);
+    for (let output in cell_obj.metadata.node.getInputs().inputs) { // plus one to add extra input for creating new ones
+        makePin('output').appendTo(outputsdiv).find('input').val(output);
     }
+    makePin('output').appendTo(outputsdiv); // extra input for adding new outputs
 
     
 
@@ -239,17 +229,25 @@ function addPins(cell_obj) {
 
     function makePin(io) {
         if ('input' != io) io = 'output';
-        const ind = cell_obj.metadata.nodes[io].push({}) - 1;
         const nameInput = $('<input>');
-        nameInput.focusin(function(){
+        nameInput.on('focusin', function(){
             // change to edit mode so keystrokes are not interpreted as commands
             cell_obj.events.trigger('edit_mode.Cell', {cell:cell_obj});
+            $(this).data('oldval', $(this).val());
         });
         nameInput.on('input', function() {
-            // edit the pin name to value of text field
-            cell_obj.metadata.nodes[io][ind].name = nameInput.val();
+            // add another if this is the last one
+            if ($(this).closest(`.node-${io}`).is(':last-child')) {
+                $(this).closest(`.node-${io}s`).append(makePin(io));
+            }
         });
-        nameInput.val(cell_obj.metadata.nodes[io][ind].name || '');
+        nameInput.on('focusout', function(){
+            // remove if blank, unless its the last child
+            if ($(this).val() === '' && !$(this).closest(`node-${io}`).is(':last-child')) {
+                $(this).closest(`node-${io}`).remove();
+            }
+            cell_obj.metadata.node.getInputs().onSetInputName($(this).data('oldval'), $(this).val());
+        })
         const pin = $('<div>').addClass(`node-${io}-pin`);
         addWireDragListener(pin[0]);
         return $('<div>').append(pin).append(nameInput).addClass(`node-${io}`);
@@ -259,45 +257,36 @@ function addPins(cell_obj) {
 
 
     function addWireDragListener(pin) {
-        pin.addEventListener('mousedown', function(e1){
-            // start dragging wire from this pin
-            // const line = $('<line>').appendTo($('<svg>').addClass('node-wire-svg').appendTo($('#notebook-container')));
-            // line.attr('x1', $(pin).position().left);
-            // line.attr('y1', $(pin).position().top);
-            const opposite = pin.classList.contains('node-input-pin') ? 'node-output-pin' : 'node-input-pin';
+    //     pin.addEventListener('mousedown', function(e1){
+    //         const opposite = pin.classList.contains('node-input-pin') ? 'node-output-pin' : 'node-input-pin';
 
-            document.onmousemove = function(e) {
-                // point wire to end of mouse while moving
-                // line.attr('x2', e.x);
-                // line.attr('y2', e.y);
-            };
-            document.onmouseup = function(e) {
-                // if dropped on opposite pin type, connect
-                if (e.target.classList.contains(opposite)) {
-                    // line.attr('x2', $(e.target).position().left);
-                    // line.attr('y2', $(e.target).position().top);
-                    const node1 = $(e.target).closest('.cell').data('cell').metadata.node;
-                    const node2 = $(pin).closest('.cell').data('cell').metadata.node;
-                    if (e.target.classList.contains('node-input-pin')) {
-                        const inputPinName = $(e.target).closest('.node-input').find('input').val();
-                        const inputNode = node1;
-                        const outputNode = node2;
-                    } else {
-                        const inputPinName = $(pin).closest('.node-input').find('input').val();
-                        const inputNode = node2;
-                        const outputNode = node1;
-                    }
-                    inputNode.getInputs().setInput(
-                        inputPinName,
-                        outputNode.getOutput(),
-                    )
-                } else {
-                    line.parent().remove(); // completely remove svg
-                }
-                document.onmousemove = null;
-                document.onmouseup = null;
-            }
-        });
+    //         document.onmousemove = function(e) {
+    //         };
+    //         document.onmouseup = function(e) {
+    //             // if dropped on opposite pin type, connect
+    //             if (e.target.classList.contains(opposite)) {
+    //                 const node1 = $(e.target).closest('.cell').data('cell').metadata.node;
+    //                 const node2 = $(pin).closest('.cell').data('cell').metadata.node;
+    //                 if (e.target.classList.contains('node-input-pin')) {
+    //                     const inputPinName = $(e.target).closest('.node-input').find('input').val();
+    //                     const inputNode = node1;
+    //                     const outputNode = node2;
+    //                 } else {
+    //                     const inputPinName = $(pin).closest('.node-input').find('input').val();
+    //                     const inputNode = node2;
+    //                     const outputNode = node1;
+    //                 }
+    //                 inputNode.getInputs().setInput(
+    //                     inputPinName,
+    //                     outputNode.getOutput(),
+    //                 )
+    //             } else {
+    //                 line.parent().remove(); // completely remove svg
+    //             }
+    //             document.onmousemove = null;
+    //             document.onmouseup = null;
+    //         }
+    //     });
     }
 }
 
@@ -314,9 +303,14 @@ function addName(cell_obj) {
     });
     nameInput.on('input', function() {
         // edit the node name to value of text field
-        cell_obj.metadata.nodes.name = nameInput.val();
+        // cell_obj.metadata.nodes.name = nameInput.val();
+        nameInput.val(cell_obj.metadata.node.getType().setTitle(nameInput.val()));
     });
-    nameInput.val(cell_obj.metadata.nodes.name || 'node');
+    nameInput.on('focusout', function() {
+        nameInput.val(cell_obj.metadata.node.getType().setTitle(nameInput.val()));
+    });
+    // initial value is defined by node object
+    nameInput.val(cell_obj.metadata.node.getType().getTitle());
     $('<div>').addClass('node-name').append(nameInput).prependTo(cell_obj.element);
 }
 
