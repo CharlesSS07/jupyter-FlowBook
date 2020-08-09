@@ -25,51 +25,32 @@ class FuncSpace {
 class NodeInput {
 
 	constructor() {
-		this.inputs = {};
+		this.inputs = [];
+		this.wires = {};
 	}
 
-	nextVarName() {
-		// find a variable that has not been used as input yet
-		// loop through this list, and then start adding _{c} to generate new names
-		var default_var_names = ['x', 'y', 'z', 'a', 'b', 'c', 'o', 'p', 'q', 'w'];
-		var default_var_names_cache = JSON.parse(JSON.stringify(default_var_names));
-		var name = default_var_names.shift();
-		var c = 0;
-		for (var k in this.inputs) {
-			if (name==k) {
-				if (default_var_names.length>=0) {
-					name = default_var_names.shift();
-				} else {
-					default_var_names = JSON.parse(JSON.stringify(default_var_names_cache));
-					c+=1;
-					for (var i in default_var_names) {
-						i+="_"+c;
-					}
-				}
-			}
+	onAddInputPin(name) {
+		this.inputs.push(name)
+	}
+	onRemoveInputPin(i) {
+		this.inputs.splice(i, 1);
+	}
+	onSetInputName(i, newName) {
+		if (newName==this.inputs[i]) {
+			return newName;
 		}
+		if (this.inputs.includes(newName)) {
+			return this.onSetInputName(i, newName+"_duplicate");
+		}
+		this.inputs[i] = newName;
+		return newName;
 	}
-
-	onAddInput() {
-		var name = this.nextVarName();
-		this.inputs[name] = null;
-		return name;
+	onSetInput(i, output) {
+		this.wires[this.inputs[i]] = output;
+		this.wires[this.inputs[i]].addUser(this);
 	}
-	onRemoveInput(name) {
-		delete this.inputs[name];
-	}
-	onSetInputName(oldName, newName) {
-		// set the variable name of the input
-		const tmp = this.inputs[oldName];
-		delete this.inputs[oldName];
-		this.inputs[newName] = tmp;
-	}
-	onSetInput(name, output) {
-		this.inputs[name] = output;
-		this.inputs[name].addUser(this);
-	}
-	onRemoveInput(name) {
-		this.inputs[name] = null;
+	onRemoveInput(i) {
+		delete this.wires[this.inputs[i]];
 	}
 }
 
