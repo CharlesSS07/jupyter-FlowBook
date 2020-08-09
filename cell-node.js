@@ -13,50 +13,13 @@ class FuncSpace {
 
 	static c = 0;
         static global_space_var = "FuncSpace";
+	static funcs = [];
         static get_funcname() {
                 FuncSpace.c+=1;
-                return FuncSpace.global_space_var+".func_"+FuncSpace.c; // get the variable contained by the nodespace variable on the python side
+                name = FuncSpace.global_space_var+".func_"+FuncSpace.c; // get the variable contained by the nodespace variable on the python side
+		funcs.push(name);
+		return name
         }
-}
-
-class Wire {
-
-
-	constructor(from, address) {
-		this.from = from; // NodeOutput
-		this.address = address;
-	}
-
-	getOutputVar() {
-		if (this.from==null) {
-			return this.address.getName();
-		}
-		return this.from.variableName;
-	}
-
-	updateAddress(address) {
-		this.address = address;
-	}
-
-	getFrom() {
-		return this.from;
-	}
-}
-
-class NodeInputAddress {
-
-	constructor(input, name) {
-		this.input = input;
-		this.name = name;
-	}
-
-	getInput() {
-		return this.input;
-	}
-
-	getName() {
-		return this.name;
-	}
 }
 
 class NodeInput {
@@ -89,7 +52,7 @@ class NodeInput {
 
 	onAddInput() {
 		var name = this.nextVarName();
-		this.inputs[name] = new Wire(null, this, name);
+		this.inputs[name] = null;
 	}
 	onRemoveInput(name) {
 		delete this.inputs[name];
@@ -99,15 +62,13 @@ class NodeInput {
 		tmp = this.inputs[oldName];
 		delete this.inputs[oldName];
 		this.inputs[newName] = tmp;
-		this.inputs[newName].updateAddress(new NodeInputAddress(this, name));
 	}
-	onSetInputWire(name, wire) {
-		this.inputs[name] = wire;
-		this.inputs[name].updateName(name);
-		this.inputs[name].getFrom().addUser(new NodeInputAddress(this, name));
+	onSetInput(name, output) {
+		this.inputs[name] = output;
+		this.inputs[name].addUser(this);
 	}
-	onRemoveWire(name) {
-		this.inputs[name] = new Wire(null, this, name);
+	onRemoveInput(name) {
+		this.inputs[name] = null;
 	}
 }
 
@@ -116,15 +77,19 @@ class NodeOutput {
 	constructor() {
 		// tells python to put all output generated from this code into this variable
 		this.varableName = VarSpace.get_varname();
-		this.users = [];
+		this.users = {};
 	}
 
 	addUser(user) {
-		this.users.push(user);
+		this.users[user] = 1;
+	}
+
+	removeUser(user) {
+		delete this.users[user];
 	}
 
 	getUsers() {
-		return this.users;
+		return Object.keys(this.users);
 	}
 }
 
@@ -163,6 +128,10 @@ class NodeType {
 	}
 
 	setTitle(title) {
+		if (FuncSpace.funcs.includes(title)) {
+			this.setTitle(title+".copy");
+			return
+		}
 		this.title = title;
 		this.named = true;
 	}
@@ -192,7 +161,7 @@ class NodeManager {
 	}
 
 	newType(type) {
-		if (type in this.types) {
+		if (this.types.includes(type)) {
                         this.types[type]+= 1;
                 } else {
                         this.types[type] = 1;
