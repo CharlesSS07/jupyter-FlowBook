@@ -142,7 +142,7 @@ class NodeType {
 	}
 
 	getTitle() {
-		return title;
+		return this.title;
 	}
 
 	getCell() {
