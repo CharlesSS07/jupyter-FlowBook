@@ -17,7 +17,7 @@ class FuncSpace {
         static get_funcname() {
                 FuncSpace.c+=1;
                 name = FuncSpace.global_space_var+".func_"+FuncSpace.c; // get the variable contained by the nodespace variable on the python side
-		funcs.push(name);
+		FuncSpace.funcs.push(name);
 		return name
         }
 }
@@ -161,7 +161,7 @@ class NodeManager {
 	}
 
 	newType(type) {
-		if (this.types.includes(type)) {
+		if (Object.keys(this.types).includes(type)) {
                         this.types[type]+= 1;
                 } else {
                         this.types[type] = 1;
