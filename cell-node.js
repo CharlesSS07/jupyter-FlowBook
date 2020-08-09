@@ -53,6 +53,7 @@ class NodeInput {
 	onAddInput() {
 		var name = this.nextVarName();
 		this.inputs[name] = null;
+		return name;
 	}
 	onRemoveInput(name) {
 		delete this.inputs[name];
@@ -108,6 +109,10 @@ class NodeData {
 
 	getOutput() {
 		return this.output;
+	}
+
+	getType() {
+		return this.type;
 	}
 
 	setType(type) {
