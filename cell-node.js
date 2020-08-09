@@ -140,6 +140,7 @@ class NodeType {
 		}
 		this.title = title;
 		this.named = true;
+		FuncSpace.funcs.push(this.title);
 		return this.title;
 	}
 
