@@ -6,7 +6,7 @@ function main() {
     // attach custom stylesheet
     $('<link/>').attr('type', 'text/css').attr('rel', 'stylesheet').attr('href', requirejs.toUrl('./style.css')).appendTo('head');
 
-    // import cell-node.js
+    // imports cell-node.js
     $('<script>').attr('src', requirejs.toUrl('./cell-node.js')).appendTo('body');
     nodeManager = new NodeManager();
 
@@ -379,20 +379,16 @@ function addPanListener() {
  * add event listener for mouse wheel scrolling on the background to zoom in/out on the notebook
  * */
 function addZoomListener() {
-    document.addEventListener('mousewheel', function(e) {
+    function onZoom(e) {
         if (e.target.id == 'notebook') {
             const dzoom = (2**(-e.deltaY/500)); // multiply zoom by exponential of scroll to scale page by scroll amount
             Jupyter.notebook.metadata.nodes.view.zoom *= dzoom;
-            $('#notebook-container').css('transform', `${$('#notebook-container').css('transform')} scale(${dzoom})`);
-            $('#notebook-container').css('font-size', `${parseInt($('#notebook-container').css('font-size'))/dzoom}`);
+            $('#notebook-container').css('transform', `${$('#notebook-container').css('transform')} scale(${dzoom})`); // scale notebook
         }
-    });
+    }
+    document.addEventListener('mousewheel', onZoom);
+    document.addEventListener('wheel', e=>{onZoom(e)});
 }
-
-
-
-
-
 
 function matrixToArray(str) {
     // extract parameters from string like 'matrix(1, 2, 3, 4, 5, 6)'

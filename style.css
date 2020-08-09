@@ -107,3 +107,21 @@
     background-color: green;
     border-color: red;
 }
+
+/* .CodeMirror-cursors {
+    position: absolute !important;
+    left: 0;
+}
+
+.CodeMirror-sizer {
+    min-width: 0 !important;
+    min-height: 0 !important;
+}
+
+.CodeMirror-scroll:nth-child(2) {
+    display: none !important;
+} */
+
+* {
+    transform-origin: top left;
+}
