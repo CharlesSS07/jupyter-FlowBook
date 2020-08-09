@@ -134,11 +134,11 @@ class NodeType {
 
 	setTitle(title) {
 		if (FuncSpace.funcs.includes(title)) {
-			this.setTitle(title+".copy");
-			return
+			return this.setTitle(title+".copy");
 		}
 		this.title = title;
 		this.named = true;
+		return this.title;
 	}
 
 	getTitle() {
