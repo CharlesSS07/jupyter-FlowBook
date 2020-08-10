@@ -72,6 +72,10 @@
     flex: 0 0 auto;
 }
 
+.code-format {
+  font-family: monospace;
+}
+
 
 /* .node-input-pin, .node-output-pin {
     width: 10px;
@@ -93,7 +97,7 @@
 
 
 
-.node-input-pin, .node-output-pin {
+.node-pin {
     display: inline-block;
     width: 10px;
     height: 10px;
@@ -103,9 +107,16 @@
     vertical-align: middle;
     border: 2px solid green;
 }
-.node-output-pin {
-    background-color: green;
-    border-color: red;
+
+.btn-default {
+    box-shadow: 1px 2px 5px #000000;
+}
+
+.wire {
+  fill: none;
+  stroke: rgb(53, 38, 84);
+  stroke-opacity: 0.4;
+  stroke-width: 6;
 }
 
 /* .CodeMirror-cursors {
