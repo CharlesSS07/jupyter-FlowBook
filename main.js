@@ -134,7 +134,8 @@ class NodePinInput {
       var parentNode = me.getParentNode();
       var cell = parentNode.getType().getCell();
       cell.events.trigger('edit_mode.Cell', {cell:cell});
-      parentNode.onPinFocused(this);
+
+      parentNode.onPinFocused(me);
     });
     // nameInput.on('input', function() {
     //     //
@@ -146,7 +147,7 @@ class NodePinInput {
       me.setName(parentNode.getAvaliableVarName(nameInput.val()));
       nameInput.val(me.getName());
       nameInput.placeholder = me.getName();
-      parentNode.onPinUnFocused(this);
+      parentNode.onPinUnFocused(me);
     });
     return nameInput;
   }
@@ -419,10 +420,10 @@ function main() {
     });
 
 
-    // zooming/panning around notebook
+    zooming/panning around notebook
     loadView(); // load saved zoom/pan location
-    //addPanListener(); // listen for mouse drags to pan around
-    //addZoomListener(); // listen for scrolling to zoom
+    addPanListener(); // listen for mouse drags to pan around
+    addZoomListener(); // listen for scrolling to zoom
 }
 
 
