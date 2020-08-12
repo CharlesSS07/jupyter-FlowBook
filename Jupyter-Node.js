@@ -7,12 +7,12 @@ class Node extends SaveAble {
     this.type = type;
     this.makeDraggable();
     this.nodeManager = nodeManager;
-    this.addInputPinButton = this.makeAddInputPinButton();
+    this.addInputPinButton = this.makeAddInputPinButton(this.getType().getCell());
     this.pinInputDiv = this.makePinInputDiv(this.getType().getCell());
     this.pinOutputDiv = this.makePinOutputDiv(this.getType().getCell());
     this.titleDiv = this.makeTitleDiv(this.getType().getCell());
     this.inputs = []; // list of NodePinInputs
-    this.addInputPin();
+    //this.addInputPin();
     this.outputs = [];// list of NodePinOutputs
     this.addOutputPin();
   }
@@ -73,7 +73,7 @@ class Node extends SaveAble {
     return this.pinOutputDiv;
   }
 
-  makeAddInputPinButton() {
+  makeAddInputPinButton(cell) {
     // const buttonDiv = $('<div>').attr('width', "50px");
     // const button = $('<button>').text('+').addClass('add-input-button');
     // var me = this;
