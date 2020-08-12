@@ -14,7 +14,7 @@ class NodeManager {
       // on mouse up, cancel the wire if it is being drawn, and pin is over notebook
       //console.log(e.target);
       //console.log(nodeManager.selectedIn, nodeManager.selectedOut);
-      if (e.target===me.background[0]) {
+      if (e.target===me.backgroundDiv[0]) {
         me.onCancelWiring(e);
       }
       //console.log(nodeManager.selectedIn, nodeManager.selectedOut);

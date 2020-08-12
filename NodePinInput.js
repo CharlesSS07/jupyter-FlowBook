@@ -1,8 +1,9 @@
 
-class NodePinInput {
+class NodePinInput extends SaveAble {
 
   static INPUT_NODE_TYPE = 'input';
   constructor(parentNode) {
+    super();
     this.name = '';
     this.sourceOutput = null;
     this.parentNode = parentNode;
@@ -51,7 +52,7 @@ class NodePinInput {
       nameInput.placeholder = me.getName();
       parentNode.onPinUnFocused(me);
       setSize();
-      this.computeWire();
+      me.computeWire();
     });
     return nameInput;
   }
@@ -60,13 +61,13 @@ class NodePinInput {
     const pin = $('<div>').addClass(`node-pin`);
     var me = this;
     pin.on('mousedown', function(e) {
-      console.log("selected");
+      //console.log("selected");
       e.preventDefault();
       // notify the node that this pin has been selected
       me.getParentNode().onPinSelected(me);
     });
     pin.on('mouseup', function(e) {
-      console.log("selected");
+      //console.log("selected");
       e.preventDefault();
       // notify the node that this pin has been selected
       me.getParentNode().onPinSelected(me);
@@ -91,9 +92,11 @@ class NodePinInput {
     this.sourceOutput = pinOutput;
     this.getOutput().addInput(this);
     //this.wire = $('<line style="stroke:rgb(128,128,128,128);stroke-width:6" />').attr('x1', 0).attr('y1', 0).attr('x2', 100).attr('y2', 100).appendTo('#wire-layer');
-    if (this.wire !== null) {
-      console.log('removing', this.wire);
-      document.getElementById(this.wire).remove();
+    if (!this.wire) {
+      //console.log('removing', this.wire);
+      if (document.getElementById(this.wire)) {
+        document.getElementById(this.wire).remove();
+      }
     }
     // id="'+this.getOutput().getOutputVariable()+'"
     var id = Math.random();
@@ -110,9 +113,9 @@ class NodePinInput {
     var out = this.getOutput();
     if (out !== null) {
       var wire = this.getWire();
-      console.log(this.wire);
+      //console.log(this.wire);
       if (wire) {
-        console.log('Updating wire position');
+        //console.log('Updating wire position');
         //console.log(out.getPin());
         var oPinOffset = out.getPin()[0].getBoundingClientRect();
         var iPinOffset = this.getPin()[0].getBoundingClientRect();
@@ -123,7 +126,7 @@ class NodePinInput {
         var oy = oPinOffset.y + (oPinOffset.height/2);
         var ix = iPinOffset.x + (iPinOffset.width/2);
         var iy = iPinOffset.y + (iPinOffset.height/2);
-        console.log(Ix, Iy, ox, oy, ix, iy);
+        //console.log(Ix, Iy, ox, oy, ix, iy);
         var x1 = ix-Ix;
         var y1 = iy-Iy;
         var x2 = ox-Ix;
@@ -137,9 +140,9 @@ class NodePinInput {
         var precentilex1 = (x1+x2)/(1/precentile);
         var precentilex2 = (x1+x2)/(1/(1-precentile));
         //this.wire.attr('d', '');
-        console.log(wire.getAttribute( 'd'));
+        //console.log(wire.getAttribute( 'd'));
         wire.setAttribute('d', 'M '+x1+' '+y1+' C '+precentilex1+' '+y1+', '+precentilex2+' '+y2+', '+x2+' '+y2); // all the coordinates needed to draw a bezier
-        console.log(wire.getAttribute('d'));
+        //console.log(wire.getAttribute('d'));
         //             M startx starty C supportx1 supporty1, supportx2 supporty2, endx, endy
         document.getElementById('svg-layer').innerHTML+=""; // weird hack to make svg update and show the new elements. I don't thinkg this needs to be done unless a new element is added
       }
@@ -154,7 +157,7 @@ class NodePinInput {
     if (this.wire) {
       document.getElementById(this.wire).remove();
     }
-    this.wire = this.wire = "wires/"+this.getOutput().getOutputVariable()+'/'+this.getParentNode().getType().getTitle()+'/'+this.getParentNode().getNodeManager().getNodeIndex(this)+'/'+this.getName();
+    this.wire = this.wire = "wires/"+this.getOutput().getOutputVariable()+'/'+this.getParentNode().getType().getTitle()+'/'+this.getParentNode().getNodeManager().getNodeIndex(this.getParentNode())+'/'+this.getName();
   }
 
   setWire(wire) {
@@ -182,6 +185,19 @@ class NodePinInput {
 
   remove() {
     this.getPin()[0].parentNode.remove();
+  }
+
+  static onSerialize(pin) {
+    var obj = {};
+    obj.name = pin.getName();
+    pin.computeWire();
+    obj.wire = pin.wire;
+    return JSON.stringify(obj);
+  }
+
+  static onDeserialize(string, instance) {
+    var obj = JSON.parse(string);
+
   }
 
 }

@@ -1,7 +1,8 @@
 
-class Node {
+class Node extends SaveAble {
 
   constructor(nodeManager, type) {
+    super();
     this.active = 0;
     this.type = type;
     this.makeDraggable();
@@ -219,6 +220,61 @@ class Node {
 
   onDragEnd() {
     this.updateWires();
+  }
+
+  serializeInputPins() {
+    var l = [];
+    for (var i of this.inputs) {
+      l.push(i.onSerialize());
+    }
+    return l;
+  }
+
+  serializeOutputPins() {
+    var l = [];
+    for (var i of this.outputs) {
+      l.push(i.onSerialize());
+    }
+    return l;
+  }
+
+  static deserializeInputPins(l) {
+    var inputs = [];
+    for (var i of l) {
+      inputs.push(i.onDeserialize());
+    }
+    return l;
+  }
+
+  static deserializeOutputPins(l) {
+    var outputs = [];
+    for (var i of l) {
+      outputs.push(i.onDeserialize());
+    }
+    return l;
+  }
+
+  static onSerialize(node) {
+    var obj = {};
+    obj.boundingBox = {};
+    obj.boundingBox.y =     node.getType().getCell().element[0].offsetTop;
+    obj.boundingBox.x =     node.getType().getCell().element[0].offsetLeft;
+    obj.boundingBox.width = node.getType().getCell().element[0].offsetWidth;
+    obj.inputs = node.serializeInputPins();
+    obj.outputs = node.serializeOutputPins();
+    obj.type = node.getType().getTitle();
+    return JSON.stringify(obj);
+  }
+
+  static onDeserialize(string, instance) {
+    var obj = JSON.stringify(string);
+    instance.getType().getCell().element[0].offsetTop = obj.y;
+    instance.getType().getCell().element[0].offsetLeft = obj.x;
+    instance.getType().getCell().element[0].offsetWidth = obj.width;
+    instance.inputs = Node.deserializeInputPins(obj.inputs);
+    instance.outputs = Node.deserializeOutputPins(obj.outputs);
+    instance.getType().title = obj.type;
+    return instance;
   }
 
 }

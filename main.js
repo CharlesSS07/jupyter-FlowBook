@@ -4,10 +4,23 @@ define(['base/js/namespace','base/js/events', 'require'], function(Jupyter, even
     // attach custom stylesheet
     $('<link/>').attr('type', 'text/css').attr('rel', 'stylesheet').attr('href', requirejs.toUrl('./style.css')).appendTo('head');
 
+    $('<script>').attr('src', requirejs.toUrl('./SaveAble.js')).appendTo('body');
+    $('<script>').attr('src', requirejs.toUrl('./FuncSpace.js')).appendTo('body');
+    $('<script>').attr('src', requirejs.toUrl('./Jupyter-Node.js')).appendTo('body');
+    $('<script>').attr('src', requirejs.toUrl('./NodePinInput.js')).appendTo('body');
+    $('<script>').attr('src', requirejs.toUrl('./NodeAddPinInputButton.js')).appendTo('body');
+    $('<script>').attr('src', requirejs.toUrl('./NodeManager.js')).appendTo('body');
+    $('<script>').attr('src', requirejs.toUrl('./NodePinOutput.js')).appendTo('body');
+    $('<script>').attr('src', requirejs.toUrl('./NodeType.js')).appendTo('body');
+    $('<script>').attr('src', requirejs.toUrl('./VarSpace.js')).appendTo('body');
+
+
     // overlay svg for drawing wires
     $('<svg height="100%" width="100%" style="pointer-events:none;top:0;right:0;position:absolute;" id="svg-layer"><g transform="scale(1,1)translate(0,0)" id="wire-layer"></g></svg>').appendTo($('#notebook'));
 
-    var nodeManager = new NodeManager($('#notebook'));
+    //var dm = new DataManager('root', null);
+
+    var nodeManager = new NodeManager($('#notebook'));//, dm.g('nodeManager'));
 
     // convert every existing cell to a node
     for (cell of Jupyter.notebook.get_cells().reverse()) {
@@ -34,51 +47,6 @@ define(['base/js/namespace','base/js/events', 'require'], function(Jupyter, even
   * @param cell_obj a jupyter notebook cell object
   * */
   function cellToNode(nodeManager, cell_obj) {
-
-    const cell = cell_obj.element[0]; // get element
-
-    // create node data in metadata
-    if (!cell_obj.metadata.nodes) cell_obj.metadata.nodes = {};
-    if (!cell_obj.metadata.nodes.zoom) cell_obj.metadata.nodes.zoom = {};
-
-    //cell_obj.metadata.node = nodeManager.newNode(cell_obj);
-
-    // make cell movable and resizable
-    //makeDraggable(cell);
-    //makeResizable(cell);
-
-    // write node metadata if it doesn't have any yet
-    if (!cell_obj.metadata.nodes.boundingBox) {
-      saveNodeMetadata();
-    }
-
-    // set cell position according to metadata
-    $(cell).css('top',   cell_obj.metadata.nodes.boundingBox.top);
-    $(cell).css('left',  cell_obj.metadata.nodes.boundingBox.left);
-    $(cell).css('width', cell_obj.metadata.nodes.boundingBox.width);
-
-    // save new position when changed
-    cell.addEventListener('mouseup', function(e){
-      saveNodeMetadata();
-    });
-
-    function saveNodeMetadata() {
-      // save position
-      if (!cell_obj.metadata.nodes.boundingBox) cell_obj.metadata.nodes.boundingBox = {};
-      cell_obj.metadata.nodes.boundingBox.top = cell.offsetTop;
-      cell_obj.metadata.nodes.boundingBox.left = cell.offsetLeft;
-      cell_obj.metadata.nodes.boundingBox.width = cell.offsetWidth;
-    }
-
-    // ad custom context menu  of tools/actions for cell
-    //addToolMenu(cell);
-
-    // code cells get pins and names
-    if (cell_obj instanceof Jupyter.CodeCell) {
-      //addPins(cell_obj);
-      //addName(cell_obj);
-    }
-
     var node = nodeManager.newNode(cell_obj);
   }
 

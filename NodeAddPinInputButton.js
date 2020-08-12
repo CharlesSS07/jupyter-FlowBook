@@ -3,7 +3,7 @@ class NodeAddPinInputButton extends NodePinInput {
 
   makeInput() {
     const nameInput = super.makeInput();
-    nameInput.placeholder = '+'
+    nameInput.placeholder = '+';
     var me = this;
     nameInput.off('focusin'); //remove the behaviors that super added
     nameInput.on('focusin', function(){
@@ -18,6 +18,17 @@ class NodeAddPinInputButton extends NodePinInput {
   makePin() {
     const nameInput = super.makePin().addClass('inactive-pin');
     return nameInput;
+  }
+
+  getType() {
+    return 'possibleInput';
+  }
+
+  static onSerialize(pin) {
+    var obj = {};
+    obj.name = '';
+    obj.wire = '';
+    return JSON.stringify(obj);
   }
 
 }
