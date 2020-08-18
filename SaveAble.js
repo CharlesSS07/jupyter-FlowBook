@@ -1,11 +1,11 @@
 
 class SaveAble {
 
-  static onSerialize(obj) {
+  onSerialize() {
     throw "onSerialize() of SaveAble must be implemented";
   }
 
-  static onDeserialize(string, obj) {
+  onDeserialize(string) {
     throw "onDeserialize() of SaveAble must be implemented";
   }
 }

@@ -5,8 +5,9 @@ class NodePinOutput extends NodePinInput {
 
   constructor(parentNode) {
     super(parentNode);
-    delete this.sourceOutput;
-    this.pythonKernelVariable = VarSpace.newName();
+    delete this.sourceOutputVarName;
+    this.pythonKernelVariable = null;
+    this.setOutputVariable(VarSpace.newName());
     this.inputs = [];
   }
 
@@ -15,9 +16,21 @@ class NodePinOutput extends NodePinInput {
   }
 
   removeInput(input) {
-    if (this.inputs.include(input)) {
+    if (this.inputs.includes(input)) {
       this.inputs.splice(this.inputs.indexOf(input), 1);
     }
+  }
+
+  makePin() {
+    return super.makePin().addClass('node-output-pin');
+  }
+
+  makePinDiv() {
+    var div = $('<div>').addClass('node-output');
+    div.append(this.getPin());
+    div.append(this.getField());
+    this.div = div;
+    return div;
   }
 
   updateWire() {
@@ -38,8 +51,32 @@ class NodePinOutput extends NodePinInput {
     return this.pythonKernelVariable;
   }
 
+  setOutputVariable(name) {
+    this.pythonKernelVariable = name;
+    this.inputDiv[0].placeholder = this.pythonKernelVariable;
+  }
+
   getType() {
     return NodePinOutput.OUTPUT_NODE_TYPE;
+  }
+
+  onSerialize() {
+    var inputNode = super.onSerialize(this);
+    var obj = {};
+    obj.inputNode = inputNode;
+    obj.pythonKernelVariable = this.getOutputVariable();
+    return JSON.stringify(obj);
+  }
+
+  onDeserialize(string) {
+    var obj = JSON.parse(string);
+    super.onDeserialize(obj.inputNode)
+    if (!obj) {
+      return this;
+    }
+    this.setOutputVariable(obj.pythonKernelVariable);
+    this.inputDiv[0].placeholder = this.getOutputVariable();
+    return this;
   }
 
 }

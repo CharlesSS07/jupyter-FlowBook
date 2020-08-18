@@ -5,10 +5,14 @@ class NodePinInput extends SaveAble {
   constructor(parentNode) {
     super();
     this.name = '';
-    this.sourceOutput = null;
+    this.sourceOutputVarName = null;
     this.parentNode = parentNode;
-    this.inputDiv = this.makeInput();
-    this.pin = this.makePin();
+    this.inputDiv = null;
+    this.makeInput();
+    this.pin = null;
+    this.makePin();
+    this.div = null;
+    this.makePinDiv();
     this.wire = null;
   }
 
@@ -26,7 +30,7 @@ class NodePinInput extends SaveAble {
     nameInput.on('focusin', function(){
       // change to edit mode so keystrokes are not interpreted as commands
       var parentNode = me.getParentNode();
-      var cell = parentNode.getType().getCell();
+      var cell = parentNode.getCodeCell();
       cell.events.trigger('edit_mode.Cell', {cell:cell});
       parentNode.onPinFocused(me);
     });
@@ -52,8 +56,9 @@ class NodePinInput extends SaveAble {
       nameInput.placeholder = me.getName();
       parentNode.onPinUnFocused(me);
       setSize();
-      me.computeWire();
+      me.parentNode.onSavingNode();
     });
+    this.inputDiv = nameInput;
     return nameInput;
   }
 
@@ -61,18 +66,25 @@ class NodePinInput extends SaveAble {
     const pin = $('<div>').addClass(`node-pin`);
     var me = this;
     pin.on('mousedown', function(e) {
-      //console.log("selected");
       e.preventDefault();
       // notify the node that this pin has been selected
       me.getParentNode().onPinSelected(me);
     });
     pin.on('mouseup', function(e) {
-      //console.log("selected");
       e.preventDefault();
       // notify the node that this pin has been selected
       me.getParentNode().onPinSelected(me);
     });
+    this.pin = pin;
     return pin;
+  }
+
+  makePinDiv() {
+    var div = $('<div>').addClass('node-input');
+    div.append(this.getPin());
+    div.append(this.getField());
+    this.div = div;
+    return div;
   }
 
   getName() {
@@ -84,39 +96,42 @@ class NodePinInput extends SaveAble {
   }
 
   getOutput() {
-    return this.sourceOutput;
+    if (this.sourceOutputVarName){
+      return this.parentNode.getNodeManager().getOutputByVarName(this.sourceOutputVarName);
+    }
+    return null;
   }
 
   setOutput(pinOutput) {
-    delete this.sourceOutput;
-    this.sourceOutput = pinOutput;
+    if (!pinOutput) {
+      return;
+    }
+    var oldout = this.getOutput();
+    if (oldout) {
+      this.getOutput().removeInput(this);
+    }
+    delete this.sourceOutputVarName;
+    this.sourceOutputVarName = pinOutput.getOutputVariable();
     this.getOutput().addInput(this);
     //this.wire = $('<line style="stroke:rgb(128,128,128,128);stroke-width:6" />').attr('x1', 0).attr('y1', 0).attr('x2', 100).attr('y2', 100).appendTo('#wire-layer');
-    if (!this.wire) {
-      //console.log('removing', this.wire);
-      if (document.getElementById(this.wire)) {
-        document.getElementById(this.wire).remove();
-      }
+    if (this.wire) {
+      this.wire.get().remove();
+      this.wire = null;
     }
     // id="'+this.getOutput().getOutputVariable()+'"
     var id = Math.random();
 
-    this.computeWire();
-    var path = $('<path id="'+this.wire+'" />')[0];
-    path.classList.add('wire');
-    document.getElementById('wire-layer').append(path);
+    var svgGroup = $('#wire-layer');
+    this.wire = new SVGHelper('path', svgGroup);
+    this.wire.get().classList.add('wire');
     this.updateWire();
   }
 
   updateWire() {
-    //console.log(this.getOutput());
     var out = this.getOutput();
     if (out !== null) {
       var wire = this.getWire();
-      //console.log(this.wire);
       if (wire) {
-        //console.log('Updating wire position');
-        //console.log(out.getPin());
         var oPinOffset = out.getPin()[0].getBoundingClientRect();
         var iPinOffset = this.getPin()[0].getBoundingClientRect();
         var nbContainerOffset = document.getElementById('notebook').getBoundingClientRect();
@@ -126,23 +141,15 @@ class NodePinInput extends SaveAble {
         var oy = oPinOffset.y + (oPinOffset.height/2);
         var ix = iPinOffset.x + (iPinOffset.width/2);
         var iy = iPinOffset.y + (iPinOffset.height/2);
-        //console.log(Ix, Iy, ox, oy, ix, iy);
         var x1 = ix-Ix;
         var y1 = iy-Iy;
         var x2 = ox-Ix;
         var y2 = oy-Iy;
-        // wire.attr('x1', ix-Ix);
-        // wire.attr('y1', iy-Iy);
-        // wire.attr('x2', ox-Ix);
-        // wire.attr('y2', oy-Iy);
         var midx = (x1+x2)/2;
         var precentile = 0.5;
         var precentilex1 = (x1+x2)/(1/precentile);
         var precentilex2 = (x1+x2)/(1/(1-precentile));
-        //this.wire.attr('d', '');
-        //console.log(wire.getAttribute( 'd'));
-        wire.setAttribute('d', 'M '+x1+' '+y1+' C '+precentilex1+' '+y1+', '+precentilex2+' '+y2+', '+x2+' '+y2); // all the coordinates needed to draw a bezier
-        //console.log(wire.getAttribute('d'));
+        this.wire.get().setAttribute('d', 'M '+x1+' '+y1+' C '+precentilex1+' '+y1+', '+precentilex2+' '+y2+', '+x2+' '+y2); // all the coordinates needed to draw a bezier
         //             M startx starty C supportx1 supporty1, supportx2 supporty2, endx, endy
         document.getElementById('svg-layer').innerHTML+=""; // weird hack to make svg update and show the new elements. I don't thinkg this needs to be done unless a new element is added
       }
@@ -150,14 +157,10 @@ class NodePinInput extends SaveAble {
   }
 
   getWire() {
-    return document.getElementById(this.wire);
-  }
-
-  computeWire() {
     if (this.wire) {
-      document.getElementById(this.wire).remove();
+      return this.wire.get();
     }
-    this.wire = this.wire = "wires/"+this.getOutput().getOutputVariable()+'/'+this.getParentNode().getType().getTitle()+'/'+this.getParentNode().getNodeManager().getNodeIndex(this.getParentNode())+'/'+this.getName();
+    return null;
   }
 
   setWire(wire) {
@@ -172,32 +175,36 @@ class NodePinInput extends SaveAble {
     return this.pin;
   }
 
-  getDiv() {
-    var div = $('<div>').addClass('node-input');
-    div.append(this.getPin());
-    div.append(this.getField());
-    return div;
-  }
-
   getType() {
     return NodePinInput.INPUT_NODE_TYPE;
   }
 
   remove() {
-    this.getPin()[0].parentNode.remove();
+    this.getPin()[0].remove();
+    this.getField()[0].remove();
+    this.makePinDiv()[0].remove();
   }
 
-  static onSerialize(pin) {
+  onSerialize() {
     var obj = {};
-    obj.name = pin.getName();
-    pin.computeWire();
-    obj.wire = pin.wire;
+    obj.name = this.getName();
+    var o = this.getOutput();
+    if (o) {
+      obj.outputSourceVarName = o.getOutputVariable();
+    } else {
+      obj.outputSourceVarName = this.sourceOutputVarName;
+    }
     return JSON.stringify(obj);
   }
 
-  static onDeserialize(string, instance) {
+  onDeserialize(string) {
     var obj = JSON.parse(string);
-
+    this.name = obj.name;
+    this.inputDiv.val(this.name);
+    if (obj.outputSourceVarName) {
+      this.sourceOutputVarName = obj.outputSourceVarName;
+    }
+    return this;
   }
 
 }

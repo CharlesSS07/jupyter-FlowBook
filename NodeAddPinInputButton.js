@@ -24,7 +24,7 @@ class NodeAddPinInputButton extends NodePinInput {
     return 'possibleInput';
   }
 
-  static onSerialize(pin) {
+  onSerialize() {
     var obj = {};
     obj.name = '';
     obj.wire = '';

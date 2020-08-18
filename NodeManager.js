@@ -1,45 +1,52 @@
 
 class NodeManager {
 
-  constructor(background) {
+  constructor(background) { // not using background
     // background is a jquery element that is the agreed upon background for the nodeManager
-    this.backgroundDiv = background;
+    //this.backgroundDiv = background;
     this.nodes = [];
-    this.types = {};
+    this.types = [];
     this.selectedIn = null;
     this.selectedOut = null;
-    //this.selected = [false, false];
-    var me = this;
-    this.backgroundDiv.on('mouseup', function(e) {
-      // on mouse up, cancel the wire if it is being drawn, and pin is over notebook
-      //console.log(e.target);
-      //console.log(nodeManager.selectedIn, nodeManager.selectedOut);
-      if (e.target===me.backgroundDiv[0]) {
-        me.onCancelWiring(e);
-      }
-      //console.log(nodeManager.selectedIn, nodeManager.selectedOut);
-    });
+    // var me = this;
+    // this.backgroundDiv.on('mouseup', function(e) {
+    //   // on mouse up, cancel the wire if it is being drawn, and pin is over notebook
+    //   if (e.target===me.backgroundDiv[0]) {
+    //     me.onCancelWiring(e);
+    //   }
+    //   me.refreshAllNodesMetadata();
+    // });
   }
 
   newNode(cell) {
-    var type = this.newType(new NodeType(null, cell));
-    var newnode = new Node(this, type);
+    var type = this.newType(new NodeType(null, cell.get_text()));
+    var newnode = new Node(this, type, cell);
     this.nodes.push(newnode);
     return newnode;
   }
 
-  getNewNodeInstance(type) {
-    var newnode = new Node(this, type);
+  loadNode(cell) {
+    // note that the cell currently contains all the nodes data, which is wrong since the function should not be specific to the inputs and outputs of a cell.
+    var newnode = new Node(this, null, cell);
+    this.nodes.push(newnode);
+    newnode.onDeserialize(cell.metadata.nodes);
+    return newnode;
+  }
+
+  postLoad() {
+    for (var n of this.getNodes()) {
+      n.updateWires();
+    }
+  }
+
+  getNewNodeInstance(type, cell) {
+    var newnode = new Node(this, type, cell);
     this.nodes.push(newnode);
     return newnode;
   }
 
-  getNewNodeInstance(cell) {
-    return this.getNewNodeInstance(this.getType(cell));
-  }
-
-  getNewNodeInstance(title) {
-    return this.getNewNodeInstance(this.getType(cell));
+  getNewNodeInstance(title, cell) {
+    return this.getNewNodeInstance(this.getType(title));
   }
 
   wireNodes(outputNode, inputNode, pinName) {
@@ -48,31 +55,61 @@ class NodeManager {
     input.wire(output, name);
   }
 
-  newType(type) {
-    if (Object.keys(this.types).includes(type)) {
-      this.types[type]+= 1;
-    } else {
-      this.types[type] = 1;
+  refreshAllNodesMetadata() {
+    for (var n of this.getNodes()) {
+      n.onSavingNode();
     }
+  }
+
+  getOutputByVarName(name) {
+    if (!name) {
+      return null;
+    }
+    for (var n of this.getNodes()) {
+      for (var o of n.getOutputs()) {
+        if (o.getOutputVariable()==name) {
+          return o;
+        }
+      }
+    }
+    return null;
+  }
+
+  newType(type) {
+    if (!this.getTypes().includes(type)) {
+      this.types.push(type);
+    }
+    this.consolidateTypes();
     return type;
   }
 
-  getType(cell) {
-    for (var type of Object.keys(this.types)) {
-      if (type.getCell()==cell) {
-        return type;
+  getType(title, code) {
+    console.log(this.types);
+    for (var t of this.getTypes()) {
+      if (t.getTitle()==title) {
+        return t;
       }
     }
-    return this.newType(new NodeType(null, cell));
+    return this.newType(new NodeType(title, code));
   }
 
-  getType(title) {
-    for (var type of Object.keys(this.types)) {
-      if (type.getTitle()==title) {
-        return type;
+  consolidateTypes() {
+    var types = this.getTypes();
+    var duplicatesFound = false;
+    for (var i of types) {
+      for (var j of types) {
+        if (i.getTitle()==j.getTitle() && i!=j) {
+          j.setTitle(j.getTitle()+'_1');
+          i.setTitle(i.getTitle()+'_2');
+          duplicatesFound = true;
+        }
       }
     }
-    throw "No known NodeType by title "+title;
+    if (duplicatesFound) {
+      for (var n of this.getNodes()) {
+        n.updateTitle();
+      }
+    }
   }
 
   getTypes() {
@@ -81,7 +118,7 @@ class NodeManager {
 
   onPan(e) {
     //update all nodes wire
-    for (node of this.nodes) {
+    for (var node of this.getNodes()) {
       node.updateWires();
     }
   }
@@ -99,38 +136,27 @@ class NodeManager {
   }
 
   onCancelWiring(e) {
-    //e.preventDefault();
     delete this.selectedIn;
     delete this.selectedOut;
     this.selectedIn = null;
     this.selectedOut = null;
-    //this.selected = [false, false];
-    //console.log("Wiring Cancelled");
   }
 
   onPinSelected(pinInput) {
     //run when a pin thinks its been selected
     if (pinInput.getType()==NodePinInput.INPUT_NODE_TYPE) {
       this.selectedIn = pinInput;
-      //this.selected[0] = true;
-      //console.log('input pin selected', this.selectedIn);
     } else if (pinInput.getType()==NodePinOutput.OUTPUT_NODE_TYPE) {
       this.selectedOut = pinInput;
-      //this.selected[1] = true;
-      //console.log('output pin selected', this.selectedOut);
     }
-    //console.log("Attempting to wire", this.selectedIn, this.selectedOut);
     var inNonNull = Boolean(this.selectedIn); // false when null, true when nonnull
     var outNonNull = Boolean(this.selectedOut);
-    //console.log("Decision criteria:", inNonNull, outNonNull, inNonNull && outNonNull);
     if (inNonNull && outNonNull) {
       this.selectedIn.setOutput(this.selectedOut);
-      //console.log("Wired:",this.selectedIn, this.selectedOut);
       delete this.selectedIn;
       delete this.selectedOut;
       this.selectedIn = null;
       this.selectedOut = null;
-      //this.selected = [false, false];
     }
   }
 
