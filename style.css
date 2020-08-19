@@ -35,6 +35,7 @@
     z-index: 1;
     box-shadow: black 0px 0px 5px 0px;
     min-width: 200px;
+    border-radius: 20px;
 }
 
 .node-resize-handle {
@@ -125,6 +126,11 @@
   position: absolute;
 }
 
+.svg-shadow {
+  -webkit-filter: drop-shadow( 3px 3px 2px rgba(0, 0, 0, .7));
+  filter: drop-shadow( 3px 3px 2px rgba(0, 0, 0, .7));
+}
+
 .dropdown {
   position: relative;
   display: inline-block;
@@ -154,6 +160,41 @@
 .inactive-pin-input {
   background-color: inherit;
 }
+
+.drag-bar {
+  text-align: center;
+  width: 100%;
+  padding: 10px;
+  border-width: 1px;
+  border-radius: 10px;
+  border-color: #e2e2e2;
+  border-style: solid;
+  margin-bottom: 7px;
+  //box-shadow: 2px 2px 2px grey;
+}
+
+.draggable-indicator {
+
+	width: 100%;
+	height: 1px;
+
+  border-width: 0px;
+  border-radius: 10px;
+
+	position: absolute;
+	right: 0.5em;
+	top: 0;
+	bottom: 0;
+	margin: 3px auto;
+  padding: 3px;
+  background-color: #e2e2e2;
+  box-shadow: 1px 1px 2px grey;
+}
+
+/* coloring the individual dots within each group */
+/* .draggable-indicator rect {
+	fill: #ccc;
+} */ */
 
 /* span {
     display: block;

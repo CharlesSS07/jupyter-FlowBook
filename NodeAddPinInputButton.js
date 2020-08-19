@@ -16,7 +16,8 @@ class NodeAddPinInputButton extends NodePinInput {
   }
 
   makePin() {
-    const nameInput = super.makePin().addClass('inactive-pin');
+    // make inactive pin that dosen't respond to normal events so wont interfere
+    const nameInput = super.makePin().addClass('inactive-pin').off();
     return nameInput;
   }
 

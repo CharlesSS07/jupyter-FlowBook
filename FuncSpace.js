@@ -5,18 +5,19 @@ class FuncSpace {
   static funcs = FuncSpace.getFuncs();
   static newName() {
     FuncSpace.c+=1;
+    Jupyter.notebook.metadata.nodes.funcid = FuncSpace.c;
     name = FuncSpace.global_space_var+"_func_"+FuncSpace.c; // get the variable contained by the nodespace variable on the python side
     FuncSpace.funcs.push(name);
     return name
   }
 
   static getFuncid() {
-    if (Jupyter.notebook.metadata.nodes.funcid) return Jupyter.notebook.metadata.nodes.funcid;
+    if (Jupyter.notebook.metadata.nodes && Jupyter.notebook.metadata.nodes.funcid) return Jupyter.notebook.metadata.nodes.funcid;
     return 0;
   }
 
   static getFuncs() {
-    if (Jupyter.notebook.metadata.nodes.funcs) return Jupyter.notebook.metadata.nodes.funcs;
+    if (Jupyter.notebook.metadata.nodes && Jupyter.notebook.metadata.nodes.funcs) return Jupyter.notebook.metadata.nodes.funcs;
     return [];
   }
 

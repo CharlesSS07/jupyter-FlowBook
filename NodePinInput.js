@@ -51,7 +51,10 @@ class NodePinInput extends SaveAble {
         parentNode.removeActiveInputPin(); // should remove this because is active
       }
       // change the name of this variable to the next avaliable name
-      me.setName(parentNode.getAvaliableVarName(nameInput.val()));
+      if (nameInput.val()!=me.getName()) {
+        me.setName(parentNode.getAvaliableVarName(nameInput.val()));
+      }
+
       nameInput.val(me.getName());
       nameInput.placeholder = me.getName();
       parentNode.onPinUnFocused(me);
@@ -93,6 +96,7 @@ class NodePinInput extends SaveAble {
 
   setName(name) {
     this.name = name;
+    this.getField().val(this.getName());
   }
 
   getOutput() {
@@ -113,12 +117,10 @@ class NodePinInput extends SaveAble {
     delete this.sourceOutputVarName;
     this.sourceOutputVarName = pinOutput.getOutputVariable();
     this.getOutput().addInput(this);
-    //this.wire = $('<line style="stroke:rgb(128,128,128,128);stroke-width:6" />').attr('x1', 0).attr('y1', 0).attr('x2', 100).attr('y2', 100).appendTo('#wire-layer');
     if (this.wire) {
       this.wire.get().remove();
       this.wire = null;
     }
-    // id="'+this.getOutput().getOutputVariable()+'"
     var id = Math.random();
 
     var svgGroup = $('#wire-layer');
@@ -199,8 +201,10 @@ class NodePinInput extends SaveAble {
 
   onDeserialize(string) {
     var obj = JSON.parse(string);
-    this.name = obj.name;
-    this.inputDiv.val(this.name);
+    if (!obj) {
+      return this;
+    }
+    this.setName(obj.name);
     if (obj.outputSourceVarName) {
       this.sourceOutputVarName = obj.outputSourceVarName;
     }

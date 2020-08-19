@@ -7,8 +7,8 @@ class NodePinOutput extends NodePinInput {
     super(parentNode);
     delete this.sourceOutputVarName;
     this.pythonKernelVariable = null;
-    this.setOutputVariable(VarSpace.newName());
     this.inputs = [];
+    //console.log('new output initialized');
   }
 
   addInput(input) {
@@ -48,11 +48,16 @@ class NodePinOutput extends NodePinInput {
   }
 
   getOutputVariable() {
+    if (!this.pythonKernelVariable) {
+      // console.log('setting', this.pythonKernelVariable)
+      this.setOutputVariable(VarSpace.newName());
+    }
     return this.pythonKernelVariable;
   }
 
   setOutputVariable(name) {
     this.pythonKernelVariable = name;
+    // console.log('set', name, this.pythonKernelVariable, this.getOutputVariable());
     this.inputDiv[0].placeholder = this.pythonKernelVariable;
   }
 
@@ -70,12 +75,11 @@ class NodePinOutput extends NodePinInput {
 
   onDeserialize(string) {
     var obj = JSON.parse(string);
-    super.onDeserialize(obj.inputNode)
+    super.onDeserialize(obj.inputNode);
     if (!obj) {
       return this;
     }
     this.setOutputVariable(obj.pythonKernelVariable);
-    this.inputDiv[0].placeholder = this.getOutputVariable();
     return this;
   }
 

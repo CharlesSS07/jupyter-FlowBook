@@ -21,9 +21,11 @@ define(['base/js/namespace','base/js/events', 'require'], function(Jupyter, even
 
 
     // overlay svg for drawing wires
-    $('<svg height="100%" width="100%" style="pointer-events:none;top:0;right:0;position:absolute;" id="svg-layer"><g transform="scale(1,1)translate(0,0)" id="wire-layer"></g></svg>').prependTo($('#notebook'));
+    $('<svg height="100%" width="100%" style="pointer-events:none;top:0;right:0;position:absolute;" id="svg-layer" class="svg-shadow"><g transform="scale(1,1)translate(0,0)" id="wire-layer"></g></svg>').prependTo($('#notebook'));
 
-    var nodeManager = new NodeManager();
+    if (!Jupyter.notebook.metadata.nodes) Jupyter.notebook.metadata.nodes = {};
+
+    var nodeManager = new NodeManager($('#notebook'));
 
     // convert every existing cell to a node
     for (cell of Jupyter.notebook.get_cells().reverse()) {
@@ -37,9 +39,12 @@ define(['base/js/namespace','base/js/events', 'require'], function(Jupyter, even
 
     var init_cell = Jupyter.notebook.insert_cell_above();
     // python backend will create the variable in VarSpace.global_space_var if it is not already in existance
-    init_cell.set_text('if not '+VarSpace.global_space_var+':\n'+VarSpace.global_space_var+' = {}');
+    init_cell.set_text('import datetime\nif \''+VarSpace.global_space_var+'\' not in vars():\n  '+VarSpace.global_space_var+' = {}\n'+VarSpace.global_space_var+'\nprint("Initialized Backend Successfully on "+datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))');
     init_cell.execute();
-    Jupyter.notebook.delete_cell(Jupyter.notebook.get_cells().indexOf(init_cell));
+    init_cell.element[0].style.width = "500px";
+    setTimeout(function() {
+      Jupyter.notebook.delete_cell(Jupyter.notebook.get_cells().indexOf(init_cell));
+    }, 4000);
     // convert newly created cells to nodes
     events.on('create.Cell', (event, data)=>{
       //nodeManager.getNewNodeInstance(data.cell);

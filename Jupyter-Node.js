@@ -7,48 +7,58 @@ class Node extends SaveAble {
     this.cell = cell;
     this.type = type;
     this.makeCodeCell();
-    this.makeDraggable();
     this.makeResizable();
     this.nodeManager = nodeManager;
     this.addInputPinButton = null;
-    this.makeAddInputPinButton(this.getCodeCell());
+    this.makeAddInputPinButton();
     this.pinInputDiv = null;
-    this.makePinInputDiv(this.getCodeCell());
+    this.makePinInputDiv();
     this.pinOutputDiv = null;
-    this.makePinOutputDiv(this.getCodeCell());
+    this.makePinOutputDiv();
     this.titleDiv = null;
-    this.makeTitleDiv(this.getCodeCell());
+    this.makeTitleDiv();
+    this.makeDraggable();
     this.inputs = []; // list of NodePinInputs
     //this.addInputPin();
     this.outputs = [];// list of NodePinOutputs
-    this.addOutputPin();
+    this.executed = false;
+    this.changed = false;
   }
 
   makeCodeCell() {
     var me = this;
     var cell = this.getCodeCell();
     var input = cell.input;
+    // eventes to update the code of all other cells with same type
     input.on('focusin', function() {
       me.updateCodeCell();
     });
     input.on('keyup', function() {
       me.getType().setCode(me.getCodeCell().get_text());
+      me.changed = true;
     });
     input.on('focusout', function() {
       me.getType().setCode(me.getCodeCell().get_text());
     });
+    // replace execute with my own function
     cell.execute_code = cell.execute;
     delete cell.execute;
     cell.execute = function () {
       me.execute();
     }
+    // automatically update this cell on movement
+    $(cell.element[0]).on('change', function() {
+      me.updateCodeCell();
+      //me.updateWires();
+    })
   }
 
   updateCodeCell() {
     this.getCodeCell().set_text(this.getType().getCode());
   }
 
-  makePinInputDiv(cell) {
+  makePinInputDiv() {
+    var cell = this.getCodeCell();
     const inputDiv = $('<div>');
     inputDiv.prependTo(cell.element[0]);
     var me = this;
@@ -63,7 +73,8 @@ class Node extends SaveAble {
     return this.pinInputDiv;
   }
 
-  makePinOutputDiv(cell) {
+  makePinOutputDiv() {
+    var cell = this.getCodeCell();
     const outputDiv = $('<div>').addClass('node-output'); // justify all text to right
     outputDiv.appendTo(cell.element[0]);
     var me = this;
@@ -78,24 +89,37 @@ class Node extends SaveAble {
     return this.pinOutputDiv;
   }
 
-  makeTitleDiv(cell) {
+  makeTitleDiv() {
+    var cell = this.getCodeCell();
     var me = this;
+    // make dropdown for selecting title
     const dropdown = $('<select>').addClass('code-format').addClass('node-title');
+    const titleDiv = $('<input>').addClass('code-format').addClass('node-title');
     // dropdown.css('width', '50px');
     dropdown.on('mousedown', function() {
+      // dropdown opened
       dropdown.empty();
+      // remove all previous titles and add our title, then all others
       var currentTitle = me.getType().getTitle();
       $('<option>').val(currentTitle).html(currentTitle).appendTo(dropdown);
       for (var e of me.getNodeManager().getTypes()) {
+        // list all the titles that we can change type to
         var title = e.getTitle();
-        console.log(title);
-        $('<option>').val(title).html(title).appendTo(dropdown);
+        if (title!=currentTitle) { // don't list this nodes title
+          $('<option>').val(title).html(title).appendTo(dropdown);
+        }
       }
     });
     dropdown.on('change', function(event) {
-      me.setType(me.getNodeManager().getType($(this).find("option:selected").text(), '# Type not found!'));
+      // title was selected
+      var currentTitle = me.getType().getTitle();
+      var title = me.getNodeManager().getType($(this).find("option:selected").text(), '# Type not found!');
+      if (currentTitle!=title) {
+        me.setType(title);
+      }
+      // remove all previous titles from dropdown?
     });
-    const titleDiv = $('<input>').addClass('code-format').addClass('node-title');
+
     // const listDiv = $('<div>').addClass('dropdown-content');
     var originalColor = null;
     titleDiv.on('focusin', function(e){
@@ -119,13 +143,21 @@ class Node extends SaveAble {
       me.onSavingNode();
     });
     //titleDiv.prependTo(cell.element[0]);
-    this.titleDiv = titleDiv;
     var div = $('<div>').addClass('code-format').addClass('node-title').append(dropdown).append(titleDiv);
     div.prependTo(cell.element[0]);
+    this.titleDiv = div;
     return div;
   }
 
-  makeAddInputPinButton(cell) {
+  getTitleDiv() {
+    return this.titleDiv;
+  }
+
+  getTitleField() {
+    return this.getTitleDiv().children(1);
+  }
+
+  makeAddInputPinButton() {
     // const buttonDiv = $('<div>').attr('width', "50px");
     // const button = $('<button>').text('+').addClass('add-input-button');
     // var me = this;
@@ -138,8 +170,8 @@ class Node extends SaveAble {
     // buttonDiv.prependTo(cell.element[0]);
     // button.prependTo(cell.element[0]);
     const pinInput = new NodeAddPinInputButton(this);
-    cell.element[0].prepend(pinInput.makePinDiv()[0]);
-    this.pinInputDiv = pinInput;
+    this.getCodeCell().element[0].prepend(pinInput.makePinDiv()[0]);
+    //this.pinInputDiv = pinInput;
     return pinInput;
   }
 
@@ -155,7 +187,7 @@ class Node extends SaveAble {
   }
 
   updateTitle() {
-    this.inputDiv.val(this.getType().getTitle());
+    this.getTitleField().val(this.getType().getTitle());
   }
 
   addInputPin(pinInput) {
@@ -164,14 +196,15 @@ class Node extends SaveAble {
     }
     this.inputs.push(pinInput);
     this.pinInputDiv.append(pinInput.makePinDiv());
+    this.getType().setInputNames(this.inputs);
     return pinInput;
   }
 
-  addOutputPin() {
-    const pinOutput = new NodePinOutput(this);
+  addOutputPin(pinOutput) {
+    // console.log('adding output pin');
     this.outputs.push(pinOutput);
     this.pinOutputDiv.append(pinOutput.makePinDiv());
-    //this.pinOutputDiv.append($('<br>'));
+    this.getType().setOutputNames(this.outputs);
     return pinOutput;
   }
 
@@ -206,7 +239,8 @@ class Node extends SaveAble {
   }
 
   onPinUnFocused(pinInput) {
-
+    this.getType().setInputNames(this.inputs);
+    this.getType().setOutputNames(this.outputs);
   }
 
   onSavingNode() {
@@ -218,29 +252,29 @@ class Node extends SaveAble {
   }
 
   setType(type) {
+    // console.log('setting type');
     this.type = type;
-    this.titleDiv.val(this.getType().getTitle());
-    this.titleDiv[0].placeholder = this.getType().getTitle();
     while (this.inputs.length>0) {
       this.inputs.pop().remove();
     }
     while (this.outputs.length>0) {
       this.outputs.pop().remove();
     }
-    this.getPinInputDiv().innerHTML = '';
-    this.getPinOutputDiv().innerHTML = '';
     this.getPinInputDiv().remove();
     this.getPinOutputDiv().remove();
-    this.makePinInputDiv(this.getCodeCell());
-    this.makePinOutputDiv(this.getCodeCell());
-    console.log(this.getType().getInputList());
+    this.getTitleDiv().remove();
+    this.makePinInputDiv();
+    this.makePinOutputDiv();
+    this.makeTitleDiv();
+    this.getTitleField().val(this.getType().getTitle());
+    this.getTitleField()[0].placeholder = this.getType().getTitle();
+    //console.log(this.getType().getInputList());
     for (var i of this.getType().getInputList()) {
       var pin = this.addInputPin(new NodePinInput(this));
       pin.setName(i);
     }
-    this.getCodeCell().clear_output();
     this.updateCodeCell();
-    this.getCodeCell().set_text(this.getType().getCode());
+    //console.log(this.getType().getOutputList());
     for (var i of this.getType().getOutputList()) {
       var pin = this.addOutputPin(new NodePinOutput(this));
       pin.setName(i);
@@ -263,27 +297,32 @@ class Node extends SaveAble {
 
     var me = this;
     var elmnt = this.getCodeCell().element[0];
-    elmnt.onmousedown = dragMouseDown;
+    var dragElmnt = $('<div>').addClass('drag-bar').prependTo(elmnt)[0];
+    var barCount = 5;
+    for (var i =0;i<barCount;i++) {
+      var bar = $('<div>').addClass('draggable-indicator').css('position', 'relative').css('top', i*(100/barCount)+'%').css('left', "0px");
+      dragElmnt.append(bar[0]);
+    }
+    dragElmnt.onmousedown = dragMouseDown;
     var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
 
     function dragMouseDown(e) {
       e = e || window.event;
-      //e.preventDefault();
+      e.preventDefault();
+      e.stopPropagation();
       // get the mouse cursor position at startup:
       pos3 = e.clientX;
       pos4 = e.clientY;
-
-      if (e.target===elmnt) { // only when this element is being clicked. avoids the text fields and node inputs
-        document.onmouseup = closeDragElement;
-        // call a function whenever the cursor moves:
-        document.onmousemove = elementDrag;
-        me.onDragStart();
-      }
+      document.onmouseup = closeDragElement;
+      // call a function whenever the cursor moves:
+      document.onmousemove = elementDrag;
+      me.onDragStart();
     }
 
     function elementDrag(e) {
       e = e || window.event;
-      //e.preventDefault();
+      e.preventDefault();
+      e.stopPropagation();
       // calculate the new cursor position:
       pos1 = pos3 - e.clientX;
       pos2 = pos4 - e.clientY;
@@ -383,11 +422,11 @@ class Node extends SaveAble {
     cell.execute_code();
     cell.set_text(this.getType().getCode());
     this.executed = true;
+    this.changed = false;
   }
 
   /**
   * makes a cell resizable by dragging the edges
-  * @param cell an html .cell element in a jupyter notebook to make resizable
   * */
   makeResizable() {
     var cell = $(this.getCodeCell().element[0]);
@@ -487,20 +526,18 @@ class Node extends SaveAble {
     $(this.getCodeCell().element[0]).css('top', obj.boundingBox.y);
     $(this.getCodeCell().element[0]).css('left', obj.boundingBox.x);
     $(this.getCodeCell().element[0]).css('width', obj.boundingBox.width);
+
+    this.type = this.getNodeManager().getType(obj.title, this.getCodeCell().get_text());
+
     for (var i of obj.inputs) {
       this.addInputPin((new NodePinInput(this)).onDeserialize(i));
     }
-    for (var i of this.outputs) {
-      i.remove();
-    }
-    this.outputs = [];
     for (var i of obj.outputs) {
+      // console.log('making new output');
       this.addOutputPin((new NodePinOutput(this)).onDeserialize(i));
     }
-
-    this.type = this.getNodeManager().getType(obj.title, this.getCodeCell().get_text());
-    //this.titleDiv.val(obj.title);
-    this.titleDiv[0].placeholder = obj.title;
+    this.getTitleField().val(obj.title);
+    this.getTitleField()[0].placeholder = obj.title;
     return this;
   }
 

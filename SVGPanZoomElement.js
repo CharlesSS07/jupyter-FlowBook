@@ -17,18 +17,18 @@ class SVGPanZoomElement extends PanZoomElement {
   }
 
   setPanX(x) {
-    //this.getTransform().setTranslate(x, this.getBackground().getPanX());
-    this.getNodeManager().onPan();
+    // this.getTransform().setTranslate(x, this.getBackground().getPanX());
+    this.getNodeManager().updateNodeWires();
   }
 
   setPanY(y) {
-    //this.getTransform().setTranslate(this.getBackground().getPanY(), y);
-    this.getNodeManager().onPan();
+    // this.getTransform().setTranslate(this.getBackground().getPanY(), y);
+    this.getNodeManager().updateNodeWires();
   }
 
   setZoom(z) {
-    //this.getTransform().setScale(z, z);
-    this.getNodeManager().onPan();
+    // this.getTransform().setScale(z, z);
+    this.getNodeManager().updateNodeWires();
   }
 
   // getTransform() {

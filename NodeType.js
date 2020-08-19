@@ -16,7 +16,6 @@ class NodeType {
     // if title is unchanged, return the title
     var originalTitle = this.getTitle();
     if (originalTitle==title) {
-      console.log('type was unchanged');
       return title;
     }
     FuncSpace.removeFunc(originalTitle);
@@ -51,7 +50,7 @@ class NodeType {
     return this.inputs;
   }
 
-  setInputs(pinInputList) {
+  setInputNames(pinInputList) {
     var names = [];
     for (var i of pinInputList) {
       names.push(i.getName());
@@ -63,7 +62,7 @@ class NodeType {
     return this.outputs;
   }
 
-  setOutputs(pinOutputList) {
+  setOutputNames(pinOutputList) {
     var names = [];
     for (var i of pinOutputList) {
       names.push(i.getName());
