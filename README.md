@@ -9,11 +9,14 @@ A Jupyter Notebook extension that turns cells into movable and resizable nodes i
 
     ```$ pip install jupyter_contrib_nbextensions```
 
-2. Clone this repo into `[anaconda directory]/envs/[environment name]/lib/python[version]/site-packages/jupyter_contrib_nbextensions/nbextensions/`, replacing the parts in brackets as necessary
+2. Clone this repo into `$CONDA_PREFIX/lib/python[version]/site-packages/jupyter_contrib_nbextensions/nbextensions/`, replacing the parts in brackets as necessary
 
 3. Run this command to install the extension into the home jupyter directory
 
     ```$ jupyter contrib nbextensions install --user```
+    
+    or use the script `./jupyter_contrib_nbextensions_install_user.sh` in this repo
+
 
 4. Start jupyter notebooks by running `$ jupyter notebook`
 
@@ -29,7 +32,7 @@ A Jupyter Notebook extension that turns cells into movable and resizable nodes i
 
 <img src="./screenshots/installation/nodebookcheckbox.png"/>
 
-8. Done!
+8. Open a jupyter notebook, or create a new one.
 
 
 ## How to use
@@ -39,6 +42,4 @@ This extension allows Jupyter Notebook cells to be dragged around the screen and
 Pan around by clicking and dragging on a blank space, and zoom by scrolling in the blank space.
 
 Wire nodes together by dragging from the input pin of one node to the output node of another or vice versa.
-
-Right click on a cell/node to display a context menu of actions. (A normal context menu can be accessed with Shift+Right Click)
 
