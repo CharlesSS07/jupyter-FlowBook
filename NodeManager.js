@@ -34,6 +34,9 @@ class NodeManager {
   }
 
   postLoad() {
+    for (var node of this.getNodes()) {
+      node.reInitializeWires();
+    }
     this.updateNodeWires();
   }
 

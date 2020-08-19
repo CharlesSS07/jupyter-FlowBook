@@ -107,6 +107,7 @@ class NodePinInput extends SaveAble {
   }
 
   setOutput(pinOutput) {
+    console.log('set output');
     if (!pinOutput) {
       return;
     }
@@ -121,11 +122,11 @@ class NodePinInput extends SaveAble {
       this.wire.get().remove();
       this.wire = null;
     }
-    var id = Math.random();
 
     var svgGroup = $('#wire-layer');
     this.wire = new SVGHelper('path', svgGroup);
     this.wire.get().classList.add('wire');
+    //console.log('set wire', this.wire);
     this.updateWire();
   }
 
@@ -133,6 +134,7 @@ class NodePinInput extends SaveAble {
     var out = this.getOutput();
     if (out !== null) {
       var wire = this.getWire();
+      // console.log(wire);
       if (wire) {
         var oPinOffset = out.getPin()[0].getBoundingClientRect();
         var iPinOffset = this.getPin()[0].getBoundingClientRect();
@@ -151,7 +153,7 @@ class NodePinInput extends SaveAble {
         var precentile = 0.5;
         var precentilex1 = (x1+x2)/(1/precentile);
         var precentilex2 = (x1+x2)/(1/(1-precentile));
-        this.wire.get().setAttribute('d', 'M '+x1+' '+y1+' C '+precentilex1+' '+y1+', '+precentilex2+' '+y2+', '+x2+' '+y2); // all the coordinates needed to draw a bezier
+        this.getWire().setAttribute('d', 'M '+x1+' '+y1+' C '+precentilex1+' '+y1+', '+precentilex2+' '+y2+', '+x2+' '+y2); // all the coordinates needed to draw a bezier
         //             M startx starty C supportx1 supporty1, supportx2 supporty2, endx, endy
         document.getElementById('svg-layer').innerHTML+=""; // weird hack to make svg update and show the new elements. I don't thinkg this needs to be done unless a new element is added
       }

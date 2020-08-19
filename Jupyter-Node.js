@@ -175,10 +175,17 @@ class Node extends SaveAble {
     return pinInput;
   }
 
+  reInitializeWires() {
+    for (var i of this.inputs) {
+      i.setOutput(i.getOutput());
+      i.updateWire();
+    }
+  }
+
   updateWires() {
 
     for (var i of this.inputs) {
-      i.setOutput(i.getOutput());
+      //i.setOutput(i.getOutput());
       i.updateWire();
     }
     for (var i of this.outputs) {
