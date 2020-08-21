@@ -16,14 +16,23 @@ class NodePinInput extends SaveAble {
     this.wire = null;
   }
 
+  /**
+  * set the node that this pin effects
+  * */
   setParentNode(parentNode) {
     this.parentNode = parentNode;
   }
 
+  /**
+  * get the node that manages this pin
+  * */
   getParentNode() {
     return this.parentNode;
   }
 
+  /**
+  * make the input that labels the paramater from the wire
+  * */
   makeInput() {
     const nameInput = $('<input>').addClass('code-format');
     var me = this;
@@ -65,6 +74,9 @@ class NodePinInput extends SaveAble {
     return nameInput;
   }
 
+  /**
+  * make the circle that can attach to wires
+  * */
   makePin() {
     const pin = $('<div>').addClass(`node-pin`);
     var me = this;
@@ -82,6 +94,9 @@ class NodePinInput extends SaveAble {
     return pin;
   }
 
+  /**
+  * make the div that both the pin and input are inside of
+  * */
   makePinDiv() {
     var div = $('<div>').addClass('node-input');
     div.append(this.getPin());
@@ -90,15 +105,24 @@ class NodePinInput extends SaveAble {
     return div;
   }
 
+  /**
+  * get the paramater name of this pin
+  * */
   getName() {
     return this.name;
   }
 
+  /**
+  * set the paramater name of this pin
+  * */
   setName(name) {
     this.name = name;
     this.getField().val(this.getName());
   }
 
+  /**
+  * get the output that this input pin attaches to
+  * */
   getOutput() {
     if (this.sourceOutputVarName){
       return this.parentNode.getNodeManager().getOutputByVarName(this.sourceOutputVarName);
@@ -106,6 +130,9 @@ class NodePinInput extends SaveAble {
     return null;
   }
 
+  /**
+  * set the output this pin is attached to
+  * */
   setOutput(pinOutput) {
     console.log('set output');
     if (!pinOutput) {
@@ -130,6 +157,9 @@ class NodePinInput extends SaveAble {
     this.updateWire();
   }
 
+  /**
+  * update the endpoint position of this wire
+  * */
   updateWire() {
     var out = this.getOutput();
     if (out !== null) {
@@ -160,6 +190,9 @@ class NodePinInput extends SaveAble {
     }
   }
 
+  /**
+  * return the wire svg object that is drawn
+  * */
   getWire() {
     if (this.wire) {
       return this.wire.get();
@@ -167,28 +200,47 @@ class NodePinInput extends SaveAble {
     return null;
   }
 
+  /**
+  * set the wire that this is attached to
+  * @param {SVGHelper} wire what svg element to use
+  * */
   setWire(wire) {
     this.wire = wire;
   }
 
+  /**
+  * get the field that this input uses to label its paramaters
+  * */
   getField() {
     return this.inputDiv;
   }
 
+  /**
+  * get the pin element that this pin uses
+  * */
   getPin() {
     return this.pin;
   }
 
+  /**
+  * return the pin type. NodePinInput.INPUT_NODE_TYPE to be considered an input node
+  * */
   getType() {
     return NodePinInput.INPUT_NODE_TYPE;
   }
 
+  /**
+  * do what it takes to delete and remove this from display
+  * */
   remove() {
     this.getPin()[0].remove();
     this.getField()[0].remove();
     this.makePinDiv()[0].remove();
   }
 
+  /**
+  * serialize the pin input
+  * */
   onSerialize() {
     var obj = {};
     obj.name = this.getName();
@@ -201,6 +253,9 @@ class NodePinInput extends SaveAble {
     return JSON.stringify(obj);
   }
 
+  /**
+  * deserialize the pin output
+  * */
   onDeserialize(string) {
     var obj = JSON.parse(string);
     if (!obj) {

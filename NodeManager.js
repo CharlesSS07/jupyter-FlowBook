@@ -17,6 +17,9 @@ class NodeManager {
     });
   }
 
+  /**
+  * create a new fresh node
+  * */
   newNode(cell) {
     var type = this.newType(new NodeType(null, cell.get_text()));
     var newnode = new Node(this, type, cell);
@@ -25,6 +28,9 @@ class NodeManager {
     return newnode;
   }
 
+  /**
+  * load this node from its cell metadata
+  * */
   loadNode(cell) {
     // note that the cell currently contains all the nodes data, which is wrong since the function should not be specific to the inputs and outputs of a cell.
     var newnode = new Node(this, null, cell);
@@ -33,6 +39,9 @@ class NodeManager {
     return newnode;
   }
 
+  /**
+  * what to do after loading all the nodes
+  * */
   postLoad() {
     for (var node of this.getNodes()) {
       node.reInitializeWires();
@@ -56,6 +65,9 @@ class NodeManager {
   //   input.wire(output, name);
   // }
 
+  /**
+  * how to make all nodes wires update to corect positions and statuses
+  * */
   updateNodeWires() {
     for (var node of this.getNodes()) {
       node.updateWires();
@@ -68,6 +80,9 @@ class NodeManager {
   //   }
   // }
 
+  /**
+  * find a output from its specific name in VarSpace
+  * */
   getOutputByVarName(name) {
     if (!name) {
       return null;
@@ -83,6 +98,9 @@ class NodeManager {
     return null;
   }
 
+  /**
+  * register a new type
+  * */
   newType(type) {
     if (!this.getTypes().includes(type)) {
       this.types.push(type);
@@ -91,6 +109,9 @@ class NodeManager {
     return type;
   }
 
+  /**
+  * find a type by title and if not create a new one and register that and return it
+  * */
   getType(title, code) {
     for (var t of this.getTypes()) {
       if (t.getTitle()==title) {
@@ -100,6 +121,9 @@ class NodeManager {
     return this.newType(new NodeType(title, code));
   }
 
+  /**
+  * find any duplicate types and remove duplicates
+  * */
   consolidateTypes() {
     var types = this.getTypes();
     var duplicatesFound = false;
@@ -119,6 +143,9 @@ class NodeManager {
     }
   }
 
+  /**
+  * return the list of all registered types
+  * */
   getTypes() {
     return this.types;
   }
@@ -138,10 +165,16 @@ class NodeManager {
   //   node.updateWires();
   // }
 
+  /**
+  * return list of all registered nodes
+  * */
   getNodes() {
     return this.nodes;
   }
 
+  /**
+  * cancel the wiring of nodes
+  * */
   onCancelWiring(e) {
     delete this.selectedIn;
     delete this.selectedOut;
@@ -149,6 +182,9 @@ class NodeManager {
     this.selectedOut = null;
   }
 
+  /**
+  * what to do when any pin is selected
+  * */
   onPinSelected(pinInput) {
     //run when a pin thinks its been selected
     if (pinInput.getType()==NodePinInput.INPUT_NODE_TYPE) {

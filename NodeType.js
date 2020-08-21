@@ -12,6 +12,9 @@ class NodeType {
     }
   }
 
+  /**
+  * set the title of this type
+  * */
   setTitle(title) {
     // if title is unchanged, return the title
     var originalTitle = this.getTitle();
@@ -34,22 +37,37 @@ class NodeType {
     return this.title;
   }
 
+  /**
+  * get the title of this type
+  * */
   getTitle() {
     return this.title;
   }
 
+  /**
+  * get the code for this type
+  * */
   getCode() {
     return this.code;
   }
 
+  /**
+  * set the code for this type
+  * */
   setCode(code) {
     this.code = code;
   }
 
+  /**
+  * get list of paramater names for this type
+  * */
   getInputList() {
     return this.inputs;
   }
 
+  /**
+  * set the input names for this type
+  * */
   setInputNames(pinInputList) {
     var names = [];
     for (var i of pinInputList) {
@@ -58,10 +76,16 @@ class NodeType {
     this.inputs = names;
   }
 
+  /**
+  * get list of output names for thsi type
+  * */
   getOutputList() {
     return this.outputs;
   }
 
+  /**
+  * set the output names for this type
+  * */
   setOutputNames(pinOutputList) {
     var names = [];
     for (var i of pinOutputList) {

@@ -62,12 +62,18 @@ class NodeBackground {
     });
   }
 
+  /**
+  * called before setting any notebook node metadata. initializes notebook.metadata.nodes if not already.
+  * */
   ensureNotebookNodeMetadataInitialized() {
     if (!Jupyter.notebook.metadata.nodes) {
       Jupyter.notebook.metadata.nodes = {};
     }
   }
 
+  /**
+  * called before setting any notebook node view metadata. initializes notebook.metadata.nodes.view if not already.
+  * */
   ensureViewInitialized() {
     this.ensureNotebookNodeMetadataInitialized();
     if (!Jupyter.notebook.metadata.nodes.view) {
@@ -75,11 +81,20 @@ class NodeBackground {
     }
   }
 
+  /**
+  * set the pan of this nodeBackground
+  * @param {number} x x pan offset
+  * @param {number} y y pan offset
+  * */
   setPan(x, y) {
     this.setPanX(x);
     this.setPanY(y);
   }
 
+  /**
+  * set the pan of this nodeBackground
+  * @param {number} x x pan offset
+  * */
   setPanX(x) {
     this.ensureViewInitialized();
     Jupyter.notebook.metadata.nodes.view.left = x;
@@ -88,6 +103,10 @@ class NodeBackground {
     }
   }
 
+  /**
+  * set the pan of this nodeBackground
+  * @param {number} y y pan offset
+  * */
   setPanY(y) {
     this.ensureViewInitialized();
     Jupyter.notebook.metadata.nodes.view.top = y;
@@ -135,10 +154,16 @@ class NodeBackground {
     }
   }
 
+  /**
+  * get the list of PanZoomElements that this NodeBackground is managing.
+  * */
   getElements() {
     return this.elements;
   }
 
+  /**
+  * get the element that when grapped, will pan other elements
+  * */
   getGrabElement() {
     return this.grabElement;
   }

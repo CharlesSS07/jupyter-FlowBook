@@ -25,6 +25,9 @@ class Node extends SaveAble {
     this.changed = false;
   }
 
+  /**
+  * sets up code cell, inserts callbacks, and overrides cell.execute()
+  * */
   makeCodeCell() {
     var me = this;
     var cell = this.getCodeCell();
@@ -53,10 +56,16 @@ class Node extends SaveAble {
     })
   }
 
+  /**
+  * sets the text in this nodes cell to the code stored in this nodes type
+  * */
   updateCodeCell() {
     this.getCodeCell().set_text(this.getType().getCode());
   }
 
+  /**
+  * sets up the div where NodePinInputs are appended
+  * */
   makePinInputDiv() {
     var cell = this.getCodeCell();
     const inputDiv = $('<div>');
@@ -69,10 +78,16 @@ class Node extends SaveAble {
     return inputDiv;
   }
 
+  /**
+  * returns the div where NodePinInputs are
+  * */
   getPinInputDiv() {
     return this.pinInputDiv;
   }
 
+  /**
+  * sets up the div where NodePinOutputs are appended
+  * */
   makePinOutputDiv() {
     var cell = this.getCodeCell();
     const outputDiv = $('<div>').addClass('node-output'); // justify all text to right
@@ -85,10 +100,16 @@ class Node extends SaveAble {
     return outputDiv;
   }
 
+  /**
+  * returns the div where NodePinOutputs are
+  * */
   getPinOutputDiv() {
     return this.pinOutputDiv;
   }
 
+  /**
+  * sets up the div where the title and type selector are
+  * */
   makeTitleDiv() {
     var cell = this.getCodeCell();
     var me = this;
@@ -149,14 +170,23 @@ class Node extends SaveAble {
     return div;
   }
 
+  /**
+  * returns the div that contains the entire title bar
+  * */
   getTitleDiv() {
     return this.titleDiv;
   }
 
+  /**
+  * returns the actual title input text field
+  * */
   getTitleField() {
     return this.getTitleDiv().children(1);
   }
 
+  /**
+  * sets up the blank nodeinput that creates a new nodeinput when clicked on
+  * */
   makeAddInputPinButton() {
     // const buttonDiv = $('<div>').attr('width', "50px");
     // const button = $('<button>').text('+').addClass('add-input-button');
@@ -175,6 +205,10 @@ class Node extends SaveAble {
     return pinInput;
   }
 
+  /**
+  * called after deserialization, or something that has caused the wire elements to be deleted.
+  * sets every nodes input pins to their output, creating the wires they need
+  * */
   reInitializeWires() {
     for (var i of this.inputs) {
       i.setOutput(i.getOutput());
@@ -182,6 +216,9 @@ class Node extends SaveAble {
     }
   }
 
+  /**
+  * causes this noes wires to update to the current context, such as node pin position
+  * */
   updateWires() {
 
     for (var i of this.inputs) {
@@ -193,10 +230,16 @@ class Node extends SaveAble {
     }
   }
 
+  /**
+  * sets this nodes title to that of its type
+  * */
   updateTitle() {
     this.getTitleField().val(this.getType().getTitle());
   }
 
+  /**
+  * creates and tracks a pin input
+  * */
   addInputPin(pinInput) {
     if (!pinInput) {
       pinInput = new NodePinInput(this);
@@ -207,6 +250,9 @@ class Node extends SaveAble {
     return pinInput;
   }
 
+  /**
+  * creates and tracks a pin output
+  * */
   addOutputPin(pinOutput) {
     // console.log('adding output pin');
     this.outputs.push(pinOutput);
@@ -215,16 +261,25 @@ class Node extends SaveAble {
     return pinOutput;
   }
 
+  /**
+  * deletes the pininput that is active
+  * */
   removeActiveInputPin() {
     this.inputs[this.active].remove();
     this.inputs.splice(this.active, 1);
     this.active-=1;
   }
 
+  /**
+  * causes the active pin to change look different
+  * */
   highlightActive() {
     // set the active input to be different from others, set others to be not highlighted
   }
 
+  /**
+  * returns a paramater name that has not been used by this node. should check with type about used names
+  * */
   getAvaliableVarName(name) {
     // find a variable name that has not yet been used for this node
     for (var i of this.inputs) {
@@ -235,29 +290,47 @@ class Node extends SaveAble {
     return name;
   }
 
+  /**
+  * event that a pin has been selected by the user
+  * */
   onPinSelected(pin) {
     //pass it on to node manager who can then tell who to wire together
     this.nodeManager.onPinSelected(pin);
   }
 
+  /**
+  * event that a pin has been focused by the user
+  * */
   onPinFocused(pinInput) {
     this.active = this.inputs.indexOf(pinInput);
     this.highlightActive();
   }
 
+  /**
+  * event that a pin has been unfocused by the user
+  * */
   onPinUnFocused(pinInput) {
     this.getType().setInputNames(this.inputs);
     this.getType().setOutputNames(this.outputs);
   }
 
+  /**
+  * event that causes this nodes metadata.node to update with newly serialized node
+  * */
   onSavingNode() {
     this.getCodeCell().metadata.nodes = this.onSerialize();
   }
 
+  /**
+  * returns this nodes type
+  * */
   getType() {
     return this.type;
   }
 
+  /**
+  * set this node to a new type, update the node accordingly
+  * */
   setType(type) {
     // console.log('setting type');
     this.type = type;
@@ -288,18 +361,30 @@ class Node extends SaveAble {
     }
   }
 
+  /**
+  * get this nodes actuall code celle element
+  * */
   getCodeCell() {
     return this.cell;
   }
 
+  /**
+  * get the node manager for this node
+  * */
   getNodeManager() {
     return this.nodeManager;
   }
 
+  /**
+  * get this nodes outputs
+  * */
   getOutputs() {
     return this.outputs;
   }
 
+  /**
+  * make this node be draggable
+  * */
   makeDraggable() {
 
     var me = this;
@@ -350,25 +435,40 @@ class Node extends SaveAble {
 
   }
 
+  /**
+  * cause the node to appear infront of other nodes
+  * */
   onBringToFront() {
     // should probably track the notebook container from nodeManager
     $('#notebook-container').append(this.getCodeCell().element[0]);
   }
 
+  /**
+  * event that this node is being dragged
+  * */
   onDragStart() {
     this.updateWires();
     this.onBringToFront();
   }
 
+  /**
+  * event that this node is being dragged
+  * */
   onDragging() {
     this.updateWires();
   }
 
+  /**
+  * event that this node is being dragged
+  * */
   onDragEnd() {
     this.updateWires();
     this.onSavingNode();
   }
 
+  /**
+  * returns this nodes code wrapped for execution according to nodes outputs and inputs
+  * */
   wrapCodeForExecution() {
 
     var code = this.getType().getCode();
@@ -422,6 +522,9 @@ class Node extends SaveAble {
     return func.join('\n');
   }
 
+  /**
+  * actually run the code in a node correctly
+  * */
   execute() {
     this.updateCodeCell();
     var cell = this.getCodeCell();
@@ -492,18 +595,30 @@ class Node extends SaveAble {
     };
   }
 
+  /**
+  * event called on resizing
+  * */
   onResizeStart() {
     this.updateWires();
   }
 
+  /**
+  * event called on resizing
+  * */
   onResizing() {
     this.updateWires();
   }
 
+  /**
+  * event called on resizing
+  * */
   onResizeEnd() {
     this.updateWires();
   }
 
+  /**
+  * what to do to serialize this node, returns the serialized version
+  * */
   onSerialize() {
     var obj = {};
     obj.boundingBox = {};
@@ -522,6 +637,9 @@ class Node extends SaveAble {
     return JSON.stringify(obj);
   }
 
+  /**
+  * deserialize from string, edit this node to be like it never left
+  * */
   onDeserialize(string) {
     if (!string) {
       return this;
