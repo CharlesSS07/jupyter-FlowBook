@@ -18,6 +18,8 @@ define(['base/js/namespace','base/js/events', 'require'], function(Jupyter, even
     $('<script>').attr('src', requirejs.toUrl('./PanZoomElement.js')).appendTo('body');
     $('<script>').attr('src', requirejs.toUrl('./SVGPanZoomElement.js')).appendTo('body');
     $('<script>').attr('src', requirejs.toUrl('./CSSPanZoomElement.js')).appendTo('body');
+    $('<script>').attr('src', requirejs.toUrl('./Wire.js')).appendTo('body');
+    $('<script>').attr('src', requirejs.toUrl('./WireCurvy.js')).appendTo('body');
 
 
     // overlay svg for drawing wires

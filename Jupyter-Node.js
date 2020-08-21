@@ -383,7 +383,7 @@ class Node extends SaveAble {
   }
 
   /**
-  * make this node be draggable
+  * make this node be draggable by mouse cursor
   * */
   makeDraggable() {
 
