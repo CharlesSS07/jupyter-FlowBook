@@ -556,7 +556,7 @@ class Node extends SaveAble {
     var me = this;
 
     // drag listener for right handle
-    rightHandle.onmousedown = function(e1){
+    rightHandle.addEventListener('mousedown', function(e1){
         //e1.preventDefault(); // don't drag, just resize
         const x1 = e1.x - parseInt(cell.css('width'));
         document.onmousemove = function(e) {
@@ -571,10 +571,10 @@ class Node extends SaveAble {
             me.onResizeEnd();
         }
         me.onResizeStart();
-    };
+    });
 
     // drag listener for left handle
-    leftHandle.onmousedown = function(e1){
+    leftHandle.addEventListener('mousedown', function(e1){
         //e1.preventDefault(); // don't drag, just resize
         const x1 = e1.x - parseInt(cell.css('left'));
         const w1 = e1.x + parseInt(cell.css('width'));
@@ -592,7 +592,7 @@ class Node extends SaveAble {
             me.onResizeEnd();
         }
         me.onResizeStart();
-    };
+    });
   }
 
   /**
