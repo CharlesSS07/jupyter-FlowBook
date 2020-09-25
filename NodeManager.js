@@ -18,7 +18,7 @@ class NodeManager {
   }
 
   /**
-  * create a new fresh node
+  * create a new node with new type
   * */
   newNode(cell) {
     var type = this.newType(new NodeType(null, cell.get_text()));
@@ -26,6 +26,18 @@ class NodeManager {
     newnode.addOutputPin(new NodePinOutput(this));
     this.nodes.push(newnode);
     return newnode;
+  }
+
+  addNode(node) {
+    if (!this.nodes.includes(node)) {
+      this.nodes.push(node)
+    }
+  }
+
+  removeNode(node) {
+    if (this.nodes.includes(node)) {
+      this.nodes.splice(this.nodes.indexOf(node), 1);
+    }
   }
 
   /**

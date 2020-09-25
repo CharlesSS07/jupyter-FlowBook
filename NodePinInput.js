@@ -78,7 +78,7 @@ class NodePinInput extends SaveAble {
   * make the circle that can attach to wires
   * */
   makePin() {
-    const pin = $('<div>').addClass(`node-pin`);
+    const pin = $('<div>').addClass('node-pin');
     var me = this;
     pin.on('mousedown', function(e) {
       e.preventDefault();

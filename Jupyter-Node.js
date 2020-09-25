@@ -1,14 +1,18 @@
 
 class Node extends SaveAble {
 
-  constructor(nodeManager, type, cell) {
-    super();
+  constructor(nodeManager, type, cell) {console.log(4);
+    super();console.log(5);console.log(nodeManager, type, cell);
     this.active = 0;
     this.cell = cell;
+    this.nodeManager = nodeManager;console.log(8);
+    if (!type) {
+      type = this.getNodeManager().newType(new NodeType(null, cell.get_text()))
+    }
+    console.log(12);
     this.type = type;
     this.makeCodeCell();
     this.makeResizable();
-    this.nodeManager = nodeManager;
     this.addInputPinButton = null;
     this.makeAddInputPinButton();
     this.pinInputDiv = null;
@@ -16,13 +20,31 @@ class Node extends SaveAble {
     this.pinOutputDiv = null;
     this.makePinOutputDiv();
     this.titleDiv = null;
+    console.log(23);
     this.makeTitleDiv();
+    console.log(25);
     this.makeDraggable();
     this.inputs = []; // list of NodePinInputs
     //this.addInputPin();
     this.outputs = [];// list of NodePinOutputs
     this.executed = false;
     this.changed = false;
+
+    this.getTitleField().val(this.getType().getTitle());
+    this.getTitleField()[0].placeholder = this.getType().getTitle();
+    console.log(35);
+    //console.log(this.getType().getInputList());
+    for (var i of this.getType().getInputList()) {
+      var pin = this.addInputPin(new NodePinInput(this));
+      pin.setName(i);
+    }
+    this.updateCodeCell();
+    //console.log(this.getType().getOutputList());
+    for (var i of this.getType().getOutputList()) {
+      var pin = this.addOutputPin(new NodePinOutput(this));
+      pin.setName(i);
+    }
+    console.log(47);
   }
 
   /**
@@ -60,7 +82,11 @@ class Node extends SaveAble {
   * sets the text in this nodes cell to the code stored in this nodes type
   * */
   updateCodeCell() {
-    this.getCodeCell().set_text(this.getType().getCode());
+    var update = this.getType().getCode();
+    var current = this.getCodeCell().get_text();
+    if (update!=current) {
+      this.getCodeCell().set_text(update);
+    }
   }
 
   /**
@@ -111,6 +137,7 @@ class Node extends SaveAble {
   * sets up the div where the title and type selector are
   * */
   makeTitleDiv() {
+    console.log('making title');
     var cell = this.getCodeCell();
     var me = this;
     // make dropdown for selecting title
@@ -333,7 +360,9 @@ class Node extends SaveAble {
   * */
   setType(type) {
     // console.log('setting type');
-    this.type = type;
+    // this.type = type;
+    
+    // this should be unnecessary but it shouldn't hurt
     while (this.inputs.length>0) {
       this.inputs.pop().remove();
     }
@@ -343,22 +372,54 @@ class Node extends SaveAble {
     this.getPinInputDiv().remove();
     this.getPinOutputDiv().remove();
     this.getTitleDiv().remove();
-    this.makePinInputDiv();
-    this.makePinOutputDiv();
-    this.makeTitleDiv();
-    this.getTitleField().val(this.getType().getTitle());
-    this.getTitleField()[0].placeholder = this.getType().getTitle();
-    //console.log(this.getType().getInputList());
-    for (var i of this.getType().getInputList()) {
-      var pin = this.addInputPin(new NodePinInput(this));
-      pin.setName(i);
+    // this.makePinInputDiv();
+    // this.makePinOutputDiv();
+    // this.makeTitleDiv();
+    // this.getTitleField().val(this.getType().getTitle());
+    // this.getTitleField()[0].placeholder = this.getType().getTitle();
+    // //console.log(this.getType().getInputList());
+    // for (var i of this.getType().getInputList()) {
+    //   var pin = this.addInputPin(new NodePinInput(this));
+    //   pin.setName(i);
+    // }
+    // this.updateCodeCell();
+    // //console.log(this.getType().getOutputList());
+    // for (var i of this.getType().getOutputList()) {
+    //   var pin = this.addOutputPin(new NodePinOutput(this));
+    //   pin.setName(i);
+    // }
+
+    // remove the old cell, save its shape and position
+    var nm = this.getNodeManager();
+    var ocell = this.getCodeCell().element[0];
+    var left = ocell.style.left;
+    var top = ocell.style.top;
+    var width = ocell.style.width;
+    nm.removeNode(this);
+    this.getCodeCell().element.remove();
+    Jupyter.notebook.events.trigger('delete.Cell', {'cell': this.getCodeCell(), 'index': Jupyter.notebook.find_cell_index(this.getCodeCell())});
+
+    // create new cell of selected type, and same shape and position
+    var cell_options = {
+      events: Jupyter.notebook.events,
+      config: Jupyter.notebook.config,
+      keyboard_manager: Jupyter.notebook.keyboard_manager,
+      notebook: Jupyter.notebook,
+      tooltip: Jupyter.notebook.tooltip
+    };
+    var cell = new Jupyter.CodeCell(Jupyter.notebook.kernel, cell_options);
+    cell.set_input_prompt();
+    if(Jupyter.notebook._insert_element_at_index(cell.element, 0)) {
+      cell.render();
+      cell.refresh();
+      Jupyter.notebook.set_dirty(true);
     }
-    this.updateCodeCell();
-    //console.log(this.getType().getOutputList());
-    for (var i of this.getType().getOutputList()) {
-      var pin = this.addOutputPin(new NodePinOutput(this));
-      pin.setName(i);
-    }
+    var n = new Node(null, type, cell);
+    nm.addNode(n);
+    var ncell = cell.element[0];
+    ncell.style.left = left;
+    ncell.style.top = top;
+    ncell.style.width = width;
   }
 
   /**
@@ -482,7 +543,12 @@ class Node extends SaveAble {
 
     // composite function name
 
-    var funcName = this.getType().getTitle();
+    // remove illegal characters
+    var illegalFuncNameChars = '\t !@#$%^&\*()_+{}|:"<>?[]\\;\',./-="'.split('');
+    var funcName = this.getType().getTitle()
+    for (var i of illegalFuncNameChars) {
+      funcName = funcName.replace(new RegExp('\\'+i, 'g'), '_');
+    }
     var func = ['def '+funcName+'( '+parameters.join(', ')+' ):'];
 
     // add tabs in front of all lines for def

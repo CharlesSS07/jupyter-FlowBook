@@ -109,7 +109,12 @@
     vertical-align: middle;
     box-shadow: 0px 0px 2px black;
     /* border: 1px solid gray; */
-    pointer-events: visiblePainted;
+}
+
+.inactive-pin {
+  opacity: 0.4;
+  /* stroke-opacity: 0.4; */
+  background-color: red;
 }
 
 .node-output-pin {
@@ -155,14 +160,6 @@
   display: block;
 }
 
-.active-pin-input {
-  background-color: green;
-}
-
-.inactive-pin-input {
-  background-color: inherit;
-}
-
 .drag-bar {
   text-align: center;
   width: 100%;
@@ -196,18 +193,13 @@
 /* coloring the individual dots within each group */
 /* .draggable-indicator rect {
 	fill: #ccc;
-} */ */
+} */
 
 /* span {
     display: block;
     overflow: hidden;
     padding-right:10px;
 } */
-
-.inactive-pin {
-  opacity: 0.4;
-  stroke-opacity: 0.4;
-}
 
 input {
   border-color: transparent;
