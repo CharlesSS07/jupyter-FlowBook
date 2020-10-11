@@ -18,6 +18,8 @@ define(['base/js/namespace','base/js/events', 'require'], function(Jupyter, even
     $('<script>').attr('src', requirejs.toUrl('./PanZoomElement.js')).appendTo('body');
     $('<script>').attr('src', requirejs.toUrl('./SVGPanZoomElement.js')).appendTo('body');
     $('<script>').attr('src', requirejs.toUrl('./CSSPanZoomElement.js')).appendTo('body');
+    $('<script>').attr('src', requirejs.toUrl('./Wire.js')).appendTo('body');
+    $('<script>').attr('src', requirejs.toUrl('./WireCurvy.js')).appendTo('body');
 
 
     // overlay svg for drawing wires
@@ -29,10 +31,13 @@ define(['base/js/namespace','base/js/events', 'require'], function(Jupyter, even
 
     // convert every existing cell to a node
     for (cell of Jupyter.notebook.get_cells().reverse()) {
+      console.log(cell.cell_type);
       if (cell.metadata.nodes) {
         nodeManager.loadNode(cell);
       } else {
-        nodeManager.newNode(cell);
+        if (cell.cell_type==="code"){
+          nodeManager.newNode(cell);
+	}
       }
     }
     setTimeout(function() {nodeManager.postLoad()}, 500);
