@@ -27,7 +27,7 @@ class NodeManager {
     this.nodes.push(newnode);
     return newnode;
   }
-
+  
   addNode(node) {
     if (!this.nodes.includes(node)) {
       this.nodes.push(node)

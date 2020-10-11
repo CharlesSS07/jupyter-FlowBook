@@ -6,7 +6,7 @@ class NodePinOutput extends NodePinInput {
   constructor(parentNode) {
     super(parentNode);
     delete this.sourceOutputVarName;
-    this.pythonKernelVariable = null;
+    //this.pythonKernelVariable = null;
     this.inputs = [];
     //console.log('new output initialized');
   }
@@ -48,17 +48,18 @@ class NodePinOutput extends NodePinInput {
   }
 
   getOutputVariable() {
-    if (!this.pythonKernelVariable) {
+    if (!this.name) {
       // console.log('setting', this.pythonKernelVariable)
       this.setOutputVariable(VarSpace.newName());
     }
-    return this.pythonKernelVariable;
+    //return this.pythonKernelVariable;
+    return this.name
   }
 
   setOutputVariable(name) {
-    this.pythonKernelVariable = name;
-    // console.log('set', name, this.pythonKernelVariable, this.getOutputVariable());
-    this.inputDiv[0].placeholder = this.pythonKernelVariable;
+    this.name = name;
+    console.log('set', name, this.name, this.getOutputVariable());
+    this.inputDiv[0].placeholder = this.name;
   }
 
   getType() {
@@ -69,7 +70,7 @@ class NodePinOutput extends NodePinInput {
     var inputNode = super.onSerialize(this);
     var obj = {};
     obj.inputNode = inputNode;
-    obj.pythonKernelVariable = this.getOutputVariable();
+    obj.name = this.getOutputVariable();
     return JSON.stringify(obj);
   }
 
@@ -79,7 +80,7 @@ class NodePinOutput extends NodePinInput {
     if (!obj) {
       return this;
     }
-    this.setOutputVariable(obj.pythonKernelVariable);
+    this.setOutputVariable(obj.name);
     return this;
   }
 

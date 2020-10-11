@@ -1,15 +1,14 @@
 
 class Node extends SaveAble {
 
-  constructor(nodeManager, type, cell) {console.log(4);
-    super();console.log(5);console.log(nodeManager, type, cell);
+  constructor(nodeManager, type, cell) {
+    super();
     this.active = 0;
     this.cell = cell;
-    this.nodeManager = nodeManager;console.log(8);
+    this.nodeManager = nodeManager;
     if (!type) {
       type = this.getNodeManager().newType(new NodeType(null, cell.get_text()))
     }
-    console.log(12);
     this.type = type;
     this.makeCodeCell();
     this.makeResizable();
@@ -20,9 +19,7 @@ class Node extends SaveAble {
     this.pinOutputDiv = null;
     this.makePinOutputDiv();
     this.titleDiv = null;
-    console.log(23);
     this.makeTitleDiv();
-    console.log(25);
     this.makeDraggable();
     this.inputs = []; // list of NodePinInputs
     //this.addInputPin();
@@ -32,7 +29,6 @@ class Node extends SaveAble {
 
     this.getTitleField().val(this.getType().getTitle());
     this.getTitleField()[0].placeholder = this.getType().getTitle();
-    console.log(35);
     //console.log(this.getType().getInputList());
     for (var i of this.getType().getInputList()) {
       var pin = this.addInputPin(new NodePinInput(this));
@@ -44,7 +40,6 @@ class Node extends SaveAble {
       var pin = this.addOutputPin(new NodePinOutput(this));
       pin.setName(i);
     }
-    console.log(47);
   }
 
   /**
@@ -576,15 +571,16 @@ class Node extends SaveAble {
     }
 
     // composite function run
-
+    console.log(this.getOutputs())
     var outVar = this.getOutputs()[0].getOutputVariable();
+    console.log(outVar);
     func.push(outVar+' = '+funcName+'('+inParameters.join(', ')+')');
 
     // give output to jupyter notebook in last line so that it will show in output box
 
     func.push(outVar);
 
-    console.log(func);
+    console.log(func.join('\n'));
     return func.join('\n');
   }
 
