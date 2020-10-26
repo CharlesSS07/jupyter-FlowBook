@@ -1,4 +1,4 @@
-# Jupyter Nodebook
+# Jupyter Flowbook
 A Jupyter Notebook extension that turns cells into movable and resizable nodes in a flow-like visual programming language.
 
 ## Screenshots
@@ -28,7 +28,7 @@ A Jupyter Notebook extension that turns cells into movable and resizable nodes i
 
 <img src="./screenshots/installation/disablecheckbox.png"/>
 
-7. Check 'Jupyter Nodebook' in the list of extensions to enable it
+7. Check 'Jupyter Flowbook' in the list of extensions to enable it
 
 <img src="./screenshots/installation/nodebookcheckbox.png"/>
 
