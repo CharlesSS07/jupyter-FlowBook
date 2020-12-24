@@ -1,0 +1,6 @@
+
+
+
+class NoteUIWindowElement extends CellUIWindowElementIn {
+
+}
