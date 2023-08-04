@@ -41,8 +41,8 @@ class NodeBackground {
           x1 = e.x;
           y1 = e.y;
 
-          panX+=deltaX;
-          panY+=deltaY;
+          panX+=deltaX/me.getZoom();
+          panY+=deltaY/me.getZoom();
 
           //$('#notebook').css('transform', `${$('#notebook').css('transform')} translate(${deltaX/Jupyter.notebook.metadata.nodes.view.zoom}px,${deltaY/Jupyter.notebook.metadata.nodes.view.zoom}px)`);
           me.setPan(panX, panY);
@@ -61,6 +61,28 @@ class NodeBackground {
       }
     });
   }
+
+  /**
+  * add event listener for mouse wheel scrolling on the background to zoom in/out on the notebook
+  * */
+  addZoomListener() {
+    const me = this;
+    function onZoom(e) {
+      if (e.target.id == 'notebook') {
+        const dzoom = (2**(-e.deltaY/500)); // multiply zoom by exponential of scroll to scale page by scroll amount
+        //$('#notebook-container').css('transform', `${$('#notebook-container').css('transform')} scale(${dzoom})`); // scale notebook
+        me.setZoom(dzoom*me.getZoom());
+      }
+    }
+    document.addEventListener('mousewheel', onZoom);
+    document.addEventListener('wheel', e=>{onZoom(e)});
+  }
+
+
+
+
+
+
 
   /**
   * called before setting any notebook node metadata. initializes notebook.metadata.nodes if not already.
@@ -90,6 +112,15 @@ class NodeBackground {
     this.setPanX(x);
     this.setPanY(y);
   }
+  
+  //setZoom(zoom) {
+  //      for (var e of this.getElements()) {
+  //          //$('#notebook-container')
+  //          //console.log(e, e.css('transform'));
+  //          //e.css('transform', `${$('#notebook-container').css('transform')} scale(${dzoom})`); // scale notebook
+  //          e.setZoom(zoom);
+  //      }
+  //  }
 
   /**
   * set the pan of this nodeBackground

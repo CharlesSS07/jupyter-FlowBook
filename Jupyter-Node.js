@@ -48,7 +48,7 @@ class Node extends SaveAble {
   makeCodeCell() {
     var me = this;
     var cell = this.getCodeCell();
-    var input = cell.input;
+    var input = this.getInputElem(); //cell.input;
     // eventes to update the code of all other cells with same type
     input.on('focusin', function() {
       me.updateCodeCell();
@@ -422,6 +422,13 @@ class Node extends SaveAble {
   * */
   getCodeCell() {
     return this.cell;
+  }
+
+  /**
+  * get this nodes code input area html element
+  * */
+  getInputElem() {
+    return $(this.getCodeCell().code_mirror.display.input.textarea);
   }
 
   /**

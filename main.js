@@ -16,8 +16,8 @@ define(['base/js/namespace','base/js/events', 'require'], function(Jupyter, even
     $('<script>').attr('src', requirejs.toUrl('./SVGHelper.js')).appendTo('body');
     $('<script>').attr('src', requirejs.toUrl('./NodeBackground.js')).appendTo('body');
     $('<script>').attr('src', requirejs.toUrl('./PanZoomElement.js')).appendTo('body');
-    $('<script>').attr('src', requirejs.toUrl('./SVGPanZoomElement.js')).appendTo('body');
     $('<script>').attr('src', requirejs.toUrl('./CSSPanZoomElement.js')).appendTo('body');
+    $('<script>').attr('src', requirejs.toUrl('./SVGPanZoomElement.js')).appendTo('body');
     $('<script>').attr('src', requirejs.toUrl('./Wire.js')).appendTo('body');
     $('<script>').attr('src', requirejs.toUrl('./WireCurvy.js')).appendTo('body');
 
@@ -56,17 +56,15 @@ define(['base/js/namespace','base/js/events', 'require'], function(Jupyter, even
       var node = nodeManager.newNode(data.cell);
     });
 
-    var wirePanZoomElement = new SVGPanZoomElement($('#wire-layer'));
+    var wirePanZoomElement = new SVGPanZoomElement($('#svg-layer'));
     wirePanZoomElement.setNodeManager(nodeManager);
 
-    var nodeBackground = new NodeBackground($('#notebook-container'), [new CSSPanZoomElement($('#notebook-container')), wirePanZoomElement]);
+    var nodeBackground = new NodeBackground($('#notebook'), [new CSSPanZoomElement($('#notebook-container')), wirePanZoomElement]);
 
     // zooming/panning around notebook
     nodeBackground.loadView(); // load saved zoom/pan location
     nodeBackground.addPanListener(); // listen for mouse drags to pan around
-    //addZoomListener(); // listen for scrolling to zoom
-
-
+    nodeBackground.addZoomListener(); // listen for scrolling to zoom
 
   }
 
@@ -92,30 +90,10 @@ define(['base/js/namespace','base/js/events', 'require'], function(Jupyter, even
     };
   }
 
-  /**
-  * add event listener for mouse wheel scrolling on the background to zoom in/out on the notebook
-  * */
-  function addZoomListener() {
-    function onZoom(e) {
-      if (e.target.id == 'notebook') {
-        const dzoom = (2**(-e.deltaY/500)); // multiply zoom by exponential of scroll to scale page by scroll amount
-        Jupyter.notebook.metadata.nodes.view.zoom *= dzoom;
-        $('#notebook-container').css('transform', `${$('#notebook-container').css('transform')} scale(${dzoom})`); // scale notebook
-      }
-    }
-    document.addEventListener('mousewheel', onZoom);
-    document.addEventListener('wheel', e=>{onZoom(e)});
-  }
-
   function matrixToArray(str) {
       // extract parameters from string like 'matrix(1, 2, 3, 4, 5, 6)'
       return str.match(/(-?[0-9\.]+)/g);
   }
-
-
-
-
-
 
     main();
   });

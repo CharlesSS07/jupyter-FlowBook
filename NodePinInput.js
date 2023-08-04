@@ -146,7 +146,7 @@ class NodePinInput extends SaveAble {
     this.sourceOutputVarName = pinOutput.getOutputVariable();
     this.getOutput().addInput(this);
     if (this.wire) {
-      this.wire.get().remove();
+      this.wire.remove();
       this.wire = null;
     }
 

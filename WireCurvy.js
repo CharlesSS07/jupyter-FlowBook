@@ -22,7 +22,7 @@ class WireCurvy extends Wire {
   update() {
     var oPinOffset = this.getInputPosition();
     var iPinOffset = this.getOutputPosition();
-    var nbContainerOffset = document.getElementById('notebook').getBoundingClientRect();
+    var nbContainerOffset = document.getElementById('notebook-container').getBoundingClientRect();
     var Ix = nbContainerOffset.x;
     var Iy = nbContainerOffset.y;
     var ox = oPinOffset.x + (oPinOffset.width/2);
@@ -41,4 +41,8 @@ class WireCurvy extends Wire {
     //             M startx starty C supportx1 supporty1, supportx2 supporty2, endx, endy
     document.getElementById('svg-layer').innerHTML+=""; // weird hack to make svg update and show the new elements. I don't thinkg this needs to be done unless a new element is added
   }
+
+  remove() {
+    this.wire.get().remove();
+   }
 }

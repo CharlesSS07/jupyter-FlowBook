@@ -1,10 +1,9 @@
 
 
-class SVGPanZoomElement extends PanZoomElement {
+class SVGPanZoomElement extends CSSPanZoomElement {
 
   constructor(element, background) {
     super(element);
-    //this.transform = this.getElement()[0].transform.baseVal[0];
     this.nodeManager = null;
   }
 
@@ -17,22 +16,19 @@ class SVGPanZoomElement extends PanZoomElement {
   }
 
   setPanX(x) {
-    // this.getTransform().setTranslate(x, this.getBackground().getPanX());
+    super.setPanX(x);
     this.getNodeManager().updateNodeWires();
   }
 
   setPanY(y) {
-    // this.getTransform().setTranslate(this.getBackground().getPanY(), y);
+    super.setPanY(y);
     this.getNodeManager().updateNodeWires();
   }
 
   setZoom(z) {
-    // this.getTransform().setScale(z, z);
+    super.setZoom(z);
     this.getNodeManager().updateNodeWires();
   }
 
-  // getTransform() {
-  //   return this.getElement()[0].transform.baseVal[0];
-  // }
 
 }
