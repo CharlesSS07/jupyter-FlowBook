@@ -27,7 +27,7 @@ define(['base/js/namespace','base/js/events', 'require'], function(Jupyter, even
 
     if (!Jupyter.notebook.metadata.nodes) Jupyter.notebook.metadata.nodes = {};
 
-    var nodeManager = new NodeManager($('#notebook'));
+    var nodeManager = new NodeManager($('#notebook-container'));
 
     // convert every existing cell to a node
     for (cell of Jupyter.notebook.get_cells().reverse()) {

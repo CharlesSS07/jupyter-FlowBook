@@ -19,10 +19,18 @@ class WireCurvy extends Wire {
     return this.getInput().getPin()[0].getBoundingClientRect()
   }
 
-  update() {
+  update(transform) {
     var oPinOffset = this.getInputPosition();
     var iPinOffset = this.getOutputPosition();
     var nbContainerOffset = document.getElementById('notebook-container').getBoundingClientRect();
+    //if (transform && transform.zoom) {
+    //  oPinOffset.x *= transform.zoom;
+    //  oPinOffset.y *= transform.zoom;
+    //  iPinOffset.x *= transform.zoom;
+    //  iPinOffset.y *= transform.zoom;
+    //  //nbContainerOffset.x *= transform.zoom;
+    //  //nbContainerOffset.y *= transform.zoom;
+    //}
     var Ix = nbContainerOffset.x;
     var Iy = nbContainerOffset.y;
     var ox = oPinOffset.x + (oPinOffset.width/2);

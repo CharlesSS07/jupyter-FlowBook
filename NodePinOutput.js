@@ -33,9 +33,9 @@ class NodePinOutput extends NodePinInput {
     return div;
   }
 
-  updateWire() {
+  updateWire(transform) {
     for (var i of this.inputs) {
-      i.updateWire();
+      i.updateWire(transform);
     }
   }
 

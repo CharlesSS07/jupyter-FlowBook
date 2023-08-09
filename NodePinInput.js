@@ -157,13 +157,12 @@ class NodePinInput extends SaveAble {
   /**
   * update the endpoint position of this wire
   * */
-  updateWire() {
+  updateWire(transform) {
     var out = this.getOutput();
     if (out !== null) {
       var wire = this.getWire();
-      // console.log(wire);
       if (wire) {
-        wire.update();
+        wire.update(transform);
       }
     }
   }

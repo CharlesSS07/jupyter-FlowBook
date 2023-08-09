@@ -241,14 +241,14 @@ class Node extends SaveAble {
   /**
   * causes this noes wires to update to the current context, such as node pin position
   * */
-  updateWires() {
+  updateWires(transform) {
 
     for (var i of this.inputs) {
       //i.setOutput(i.getOutput());
-      i.updateWire();
+      i.updateWire(transform);
     }
     for (var i of this.outputs) {
-      i.updateWire();
+      i.updateWire(transform);
     }
   }
 
