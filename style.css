@@ -13,6 +13,9 @@
     bottom: 0;
     margin: 0;
 }
+#notebook > * {
+    cursor: default;
+}
 
 
 #notebook-container {
@@ -72,6 +75,7 @@
 
 .node-input .node-pin, .node-output .node-pin {
     flex: 0 0 auto;
+    cursor: move;
 }
 
 .code-format {
@@ -89,7 +93,6 @@
 } */
 
 .node-title {
-	cursor: move;
   color: #000;
   font-size: 24px;
   margin-bottom: 5px;
@@ -165,6 +168,7 @@
 }
 
 .drag-bar {
+  cursor: grab;
   text-align: center;
   width: 100%;
   padding: 10px;
@@ -173,7 +177,7 @@
   border-color: #e2e2e2;
   border-style: solid;
   margin-bottom: 7px;
-  //box-shadow: 2px 2px 2px grey;
+  /*box-shadow: 2px 2px 2px grey;*/
 }
 
 .draggable-indicator {

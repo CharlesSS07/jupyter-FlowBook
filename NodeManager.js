@@ -200,10 +200,22 @@ class NodeManager {
     }
     return z;
   }
+
+  transformEvent(e) {
+    const z = this.getZoom();
+    return {...e,
+      x:       1/z*e.x,
+      y:       1/z*e.y,
+      clientX: 1/z*e.clientX,
+      clientY: 1/z*e.clientY
+      };
+  }
+
   /**
   * what to do when any pin is pressed or unpressed on
   * */
   onPinSelected(pinInput) {
+    const me = this;
     //run when a pin thinks its been selected
     let other;
     if (pinInput.getType()==NodePinInput.INPUT_NODE_TYPE) {
@@ -220,24 +232,25 @@ class NodeManager {
       // call a function whenever the cursor moves:
       document.onmousemove = elementDrag;
 
-      let wire = new WireCurvy(this.selectedOut, this.selectedIn);
+      let wire = pinInput.getWire();
+      if (! wire) {
+        wire = new WireCurvy(this.selectedOut, this.selectedIn);
+      }
 
       let mx = 0;
       let my = 0;
 
       if (pinInput.getType()==NodePinInput.INPUT_NODE_TYPE) {
-        const me = this;
-          // return the mouse position instead of the null output
-          wire.getInputPosition = function() {
-            return new DOMRect(mx/me.getZoom(), my/me.getZoom());
-          }
+        // return the mouse position instead of the null output
+        wire.getInputPosition = function() {
+          return new DOMRect(mx/me.getZoom(), my/me.getZoom());
+        }
       }
       else if (pinInput.getType()==NodePinOutput.OUTPUT_NODE_TYPE) {
-        var me = this;
-          // return the mouse position instead of the null output
-          wire.getOutputPosition = function() {
-            return new DOMRect(mx/me.getZoom(), my/me.getZoom());
-          }
+        // return the mouse position instead of the null output
+        wire.getOutputPosition = function() {
+          return new DOMRect(mx/me.getZoom(), my/me.getZoom());
+        }
       }
 
       var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
@@ -257,18 +270,18 @@ class NodeManager {
 
       function closeDragElement(e) {
         // remove the wire, and the events
-        wire.getWireSVG().remove();
+        wire.remove();
         wire = null;
         document.onmouseup = null;
         document.onmousemove = null;
+        me.selectedIn = null;
+        me.selectedOut = null;
       }
     }
     var inNonNull = Boolean(this.selectedIn); // false when null, true when nonnull
     var outNonNull = Boolean(this.selectedOut);
     if (inNonNull && outNonNull) {
       this.selectedIn.setOutput(this.selectedOut);
-      delete this.selectedIn;
-      delete this.selectedOut;
       this.selectedIn = null;
       this.selectedOut = null;
     }

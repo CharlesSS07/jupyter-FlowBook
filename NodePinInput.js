@@ -134,7 +134,6 @@ class NodePinInput extends SaveAble {
   * set the output this pin is attached to
   * */
   setOutput(pinOutput) {
-    console.log('set output');
     if (!pinOutput) {
       return;
     }

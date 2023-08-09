@@ -31,7 +31,6 @@ define(['base/js/namespace','base/js/events', 'require'], function(Jupyter, even
 
     // convert every existing cell to a node
     for (cell of Jupyter.notebook.get_cells().reverse()) {
-      console.log(cell.cell_type);
       if (cell.metadata.nodes) {
         nodeManager.loadNode(cell);
       } else {

@@ -8,7 +8,6 @@ class NodePinOutput extends NodePinInput {
     delete this.sourceOutputVarName;
     //this.pythonKernelVariable = null;
     this.inputs = [];
-    //console.log('new output initialized');
   }
 
   addInput(input) {
@@ -49,7 +48,6 @@ class NodePinOutput extends NodePinInput {
 
   getOutputVariable() {
     if (!this.name) {
-      // console.log('setting', this.pythonKernelVariable)
       this.setOutputVariable(VarSpace.newName());
     }
     //return this.pythonKernelVariable;
@@ -58,7 +56,6 @@ class NodePinOutput extends NodePinInput {
 
   setOutputVariable(name) {
     this.name = name;
-    console.log('set', name, this.name, this.getOutputVariable());
     this.inputDiv[0].placeholder = this.name;
   }
 

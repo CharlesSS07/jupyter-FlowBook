@@ -51,6 +51,7 @@ class WireCurvy extends Wire {
   }
 
   remove() {
-    this.wire.get().remove();
+    this.getWireSVG().remove();
+    this.wire = null;
    }
 }

@@ -461,10 +461,11 @@ class Node extends SaveAble {
     dragElmnt.onmousedown = dragMouseDown;
     var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
 
-    function dragMouseDown(e) {
-      e = e || window.event;
-      e.preventDefault();
-      e.stopPropagation();
+    function dragMouseDown(ee) {
+      ee = ee || window.event;
+      ee.preventDefault();
+      ee.stopPropagation();
+      const e = me.getNodeManager().transformEvent(ee);
       // get the mouse cursor position at startup:
       pos3 = e.clientX;
       pos4 = e.clientY;
@@ -472,12 +473,14 @@ class Node extends SaveAble {
       // call a function whenever the cursor moves:
       document.onmousemove = elementDrag;
       me.onDragStart();
+      $(dragElmnt).css('cursor', 'grabbing');
     }
 
-    function elementDrag(e) {
-      e = e || window.event;
-      e.preventDefault();
-      e.stopPropagation();
+    function elementDrag(ee) {
+      ee = ee || window.event;
+      ee.preventDefault();
+      ee.stopPropagation();
+      const e = me.getNodeManager().transformEvent(ee);
       // calculate the new cursor position:
       pos1 = pos3 - e.clientX;
       pos2 = pos4 - e.clientY;
@@ -494,6 +497,7 @@ class Node extends SaveAble {
       document.onmouseup = null;
       document.onmousemove = null;
       me.onDragEnd();
+      $(dragElmnt).css('cursor', 'grab');
     }
 
   }
@@ -605,7 +609,11 @@ class Node extends SaveAble {
   * makes a cell resizable by dragging the edges
   * */
   makeResizable() {
-    var cell = $(this.getCodeCell().element[0]);
+    var me = this;
+    var cell = $(this.getCodeCell().element);
+
+    // cell.resizable({handles: 'e, w'});
+    // cell.on('resize', () => {me.onResizeEnd()});
     // create and add an invisible element on each side which will be dragged to resize the cell
     const rightHandle = document.createElement('div'); // right resizing handle
     const leftHandle  = document.createElement('div'); // left resizing handle
@@ -619,13 +627,15 @@ class Node extends SaveAble {
     cell.append(rightHandle);
     cell.append(leftHandle);
 
-    var me = this;
+
 
     // drag listener for right handle
-    rightHandle.addEventListener('mousedown', function(e1){
+    rightHandle.addEventListener('mousedown', function(e11){
+        const e1 = me.getNodeManager().transformEvent(e11);
         //e1.preventDefault(); // don't drag, just resize
         const x1 = e1.x - parseInt(cell.css('width'));
-        document.onmousemove = function(e) {
+        document.onmousemove = function(ee) {
+            const e = me.getNodeManager().transformEvent(ee);
             // change width on mouse move
             cell.css('width', e.x - x1 + "px");
             me.onResizing();
@@ -640,11 +650,13 @@ class Node extends SaveAble {
     });
 
     // drag listener for left handle
-    leftHandle.addEventListener('mousedown', function(e1){
+    leftHandle.addEventListener('mousedown', function(e11){
+        const e1 = me.getNodeManager().transformEvent(e11);
         //e1.preventDefault(); // don't drag, just resize
         const x1 = e1.x - parseInt(cell.css('left'));
         const w1 = e1.x + parseInt(cell.css('width'));
-        document.onmousemove = function(e) {
+        document.onmousemove = function(ee) {
+            const e = me.getNodeManager().transformEvent(ee);
             // change width on mouse move
             // for the left handle, the side has to move as well as the width changing
             cell.css('width', w1 - e.x + "px");
