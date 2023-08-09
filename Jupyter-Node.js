@@ -578,16 +578,13 @@ class Node extends SaveAble {
     }
 
     // composite function run
-    console.log(this.getOutputs())
     var outVar = this.getOutputs()[0].getOutputVariable();
-    console.log(outVar);
     func.push(outVar+' = '+funcName+'('+inParameters.join(', ')+')');
 
     // give output to jupyter notebook in last line so that it will show in output box
 
     func.push(outVar);
 
-    console.log(func.join('\n'));
     return func.join('\n');
   }
 
@@ -683,6 +680,7 @@ class Node extends SaveAble {
   * */
   onResizeEnd() {
     this.updateWires();
+    this.onSavingNode();
   }
 
   /**
