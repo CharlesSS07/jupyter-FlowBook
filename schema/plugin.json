@@ -1,0 +1,8 @@
+{
+  "jupyter.lab.shortcuts": [],
+  "title": "flowlab",
+  "description": "flowlab settings.",
+  "type": "object",
+  "properties": {},
+  "additionalProperties": false
+}

@@ -1,0 +1,21 @@
+# Changes here will be overwritten by Copier; NEVER EDIT MANUALLY
+_commit: v4.1.0
+_src_path: https://github.com/jupyterlab/extension-template
+author_email: robertstrauss@pm.me
+author_name: Strauss
+data_format: string
+file_extension: ''
+has_binder: false
+has_settings: true
+kind: frontend
+labextension_name: flowlab
+mimetype: ''
+mimetype_name: ''
+project_short_description: A more intuitive, visual-based way of understanding and
+    editing code. Code is split into nodes implementing functions with wires transporting
+    data between them.
+python_name: flowlab
+repository: ''
+test: true
+viewer_name: ''
+
