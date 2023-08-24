@@ -3,3 +3,60 @@
 
     https://jupyterlab.readthedocs.io/en/stable/developer/css.html
 */
+
+
+.jp-flownode {
+    position: absolute;
+    display: inline-block;
+    background: white;
+    border-radius: 5px;
+    box-shadow: 0 10px 10px rgba(0, 0, 0, 0.3);
+    min-width: 10rem;
+    overflow: hidden;
+}
+
+.flownode-draghandle {
+    width: 100%;
+    height: 1rem;
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.flownode-close-button {
+    display: inline-block;
+    width: 0.9rem;
+    height: 0.9rem;
+    content: 'x';
+    background: darkgrey;
+    border-radius: 5px;
+    border: 1px solid black;
+}
+
+
+.flownode-input-pin {
+    display: inline-block;
+    position: relative;
+    width: 8px;
+    left: -4px;
+    height: 8px;
+    background: grey;
+    border-radius: 100%;
+    border: 1px solid black;
+}
+
+.flownode-add-pin-button {
+    display: inline-block;
+    width: 100%;
+    margin: 3px;
+    border-radius: 5px;
+    border: 1px solid grey;
+    content: '+';
+    justify: center;
+    background: grey;
+}
+
+.flownode-codeeditor {
+    margin: 3px;
+    border-radius: 5px;
+    border: 1px solid grey;
+}
+

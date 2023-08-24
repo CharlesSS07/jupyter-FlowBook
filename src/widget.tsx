@@ -58,6 +58,18 @@ export class FlowPanel extends Widget { //ReactWidget {
 
       this._onContentChanged();
 
+      console.log('nl', this._model.nodelist);
+      console.log('nodes', this._model.nodelist.nodes);
+      for (let fnode of this._model.nodelist.nodes) {
+        this.node.appendChild(fnode.node);
+      }
+      this._model.nodelist.nodeAdded.connect((nodelist, nodeId) => {
+        const fn = nodelist.get(nodeId);
+        if (fn) {
+          this.node.appendChild(fn.node);
+        }
+      })
+
       this.update();
     });
 
@@ -225,9 +237,7 @@ export class FlowPanel extends Widget { //ReactWidget {
             this._clients.set(id, el);
             this.node.appendChild(el);
             
-            for (let fnode of this._model.nodelist) {
-              this.node.appendChild(fnode.widget.node);
-            }
+            
           }
         } else if (this._clients.has(id)) {
           this.node.removeChild(this._clients.get(id)!);

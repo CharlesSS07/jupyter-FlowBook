@@ -11,9 +11,9 @@ import { ISignal, Signal } from '@lumino/signaling';
 import * as Y from 'yjs';
 
 //import { useGetUniqueKey } from "react-generate-unique-key-for-map";
-//import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from 'uuid';
 
-import { FlowNode } from './flownode';
+import { FlowNode, FlowNodeData } from './flownode';
 
 /**
  * Document structure
@@ -21,7 +21,7 @@ import { FlowNode } from './flownode';
 export type SharedObject = {
   x: number;
   y: number;
-  nodelist: FlowNode[]; //Map<string, FlowNode>;
+  nodelist: NodeList;//Map<string, FlowNode>;
   content: string;
 };
 
@@ -32,6 +32,84 @@ export type Position = {
   x: number;
   y: number;
 };
+
+
+export class NodeList {
+  // TODO: add model (shared) to serialize
+  // [key: string]: FlowNode;
+  // static create(list: Array<FlowNodeData>, model: FlowDocModel, map: Y.Map<FlowNode>): NodeList {
+  //   const nodelist = new NodeList(map);
+  //   console.log('am a nodelist');
+  //   console.log(nodelist.nodes);
+  //   for (let nodeId in list) {
+  //     nodelist.set(nodeId, FlowNode.create(list[nodeId], model));
+  //   }
+
+  //   return nodelist;
+  // }
+  constructor() { //map: Y.Map<FlowNodeData>
+    this._nodemap = new Map<string, FlowNode>();//map;//new Y.Map<FlowNode>();
+  }
+  load(obj: {[key: string]: FlowNodeData}, model: FlowDocModel) {
+    this._nodemap = new Map((Object.keys(obj)).map((key: string) => [key, FlowNode.create(obj[key], model)]));
+  }
+
+  get(key: string): FlowNode | undefined {
+    return this._nodemap.get(key);
+  }
+
+  set(nodeId: string, val: FlowNode) {
+    const _prev = this._nodemap.get(nodeId);
+    if (_prev) {
+      _prev.remove();
+    }
+    this._nodemap.set(nodeId, val);
+    this._nodeAdded.emit(nodeId);
+  }
+
+  add(val: FlowNode) {
+    const nodeId = this.newNodeId();  //this.newUniqueNodeId(fnode);
+    this.set(nodeId, val);
+  }
+
+  toJSON(): Object {
+    return Object.fromEntries(this._nodemap.entries());
+  }
+  toString(): string {
+    return JSON.stringify(this.toJSON());
+  }
+
+
+  newNodeId() {
+    let id: string;
+    do {
+      id = uuidv4();
+    } while (this._nodemap.has(id))
+    return id;
+    // while (this._maxnodeid in this.nodelist) {
+    //   this._maxnodeid += 1;
+    // }
+    // return this._maxnodeid;
+  }
+
+  // [Symbol.iterator]() {
+
+  // }
+  get nodes(): IterableIterator<FlowNode> {
+    return this._nodemap.values();
+  }
+
+  // get y(): Y.Map<FlowNodeData> {
+  //   return this._nodemap;
+  // }
+  get nodeAdded(): ISignal<this, string>{
+    return this._nodeAdded;
+  }
+
+  private _nodemap: Map<string, FlowNode>;
+  private _nodeAdded = new Signal<this, string>(this);
+  // private _maxnodeid
+}
 
 
 
@@ -144,12 +222,12 @@ export class FlowDocModel implements DocumentRegistry.IModel {
   /**
    * Shared object content
    */
-  get content(): string {
-    return this.sharedModel.get('content');
-  }
-  set content(v: string) {
-    this.sharedModel.set('content', v);
-  }
+  // get content(): string {
+  //   return this.sharedModel.get('content');
+  // }
+  // set content(v: string) {
+  //   this.sharedModel.set('content', v);
+  // }
 
   /**
    * Shared object position
@@ -164,12 +242,14 @@ export class FlowDocModel implements DocumentRegistry.IModel {
   /**
    * list of flow nodes
    */
-  get nodelist(): FlowNode[] { // Map<string, FlowNode>
-    return this.sharedModel.get('nodelist');
+  get nodelist(): NodeList {//FlowNode[] { // Map<string, FlowNode>
+    // console.log(this.sharedModel.get('nodelist'));
+    // console.log(this.sharedModel.get('nodelist').nodes);
+    return this.sharedModel.nodes;//get('nodelist');
   }
-  set nodelist(nl: FlowNode[]) { // Map<string, FlowNode>
-    this.sharedModel.set('nodelist', nl);
-  }
+  // set nodelist(nl: NodeList) { // Map<string, FlowNode> // FlowNode[]
+  //   this.sharedModel.set('nodelist', nl);
+  // }
 
   /**
    * get the signal clientChanged to listen for changes on the clients sharing
@@ -228,19 +308,13 @@ export class FlowDocModel implements DocumentRegistry.IModel {
   addNode(x: number, y: number) {
     const fnode = new FlowNode(this); //{model: this, func: '', pos: {x:x,y:y}, inputs: [], outputs: []};
     fnode.pos = {x: x, y: y};
-    const nodeId = this.newNodeId(); //uuidv4(); //this.newUniqueNodeId(fnode);
-    const nl = this.sharedModel.get('nodelist');
-    nl[nodeId] = fnode;
-    this.sharedModel.set('nodelist', nl);
+    // const nodeId = this.newNodeId(); //uuidv4(); //this.newUniqueNodeId(fnode);
+    // const nl = this.sharedModel.get('nodelist');
+
+    this.nodelist.add(fnode);//set(nodeId, fnode);
+    // this.sharedModel.set('nodelist', this.nodelist);
   }
 
-
-  newNodeId() {
-    while (this._maxnodeid in this.nodelist) {
-      this._maxnodeid += 1;
-    }
-    return this._maxnodeid;
-  }
 
   /**
    * generate a new unique ID for a new node
@@ -265,9 +339,12 @@ export class FlowDocModel implements DocumentRegistry.IModel {
     const obj = {
       x: pos?.x ?? 10,
       y: pos?.y ?? 10,
-      nodelist: this.sharedModel.get('nodelist') ?? {},//new Map<string, FlowNode>(),
-      content: this.sharedModel.get('content') ?? ''
+      nodelist: this.sharedModel.nodes.toJSON(), //{},//new Map<string, FlowNode>(),
+      // content: this.sharedModel.get('content') ?? ''
     };
+    console.log('nodes', this.sharedModel.nodes);
+    console.log(obj);
+    console.log('stringed', JSON.stringify(obj));
     return JSON.stringify(obj, null, 2);
   }
 
@@ -280,10 +357,12 @@ export class FlowDocModel implements DocumentRegistry.IModel {
    */
   fromString(data: string): void {
     const obj = JSON.parse(data);
+
     this.sharedModel.transact(() => {
       this.sharedModel.set('position', { x: obj.x, y: obj.y });
-      this.sharedModel.set('content', obj.content);
-      this.sharedModel.set('nodelist', obj.nodelist);
+      // this.sharedModel.set('content', obj.content);
+      this.sharedModel.nodes.load(obj.nodelist, this);
+      // this.sharedModel.set('nodelist', NodeList.create(obj.nodelist, this));
     });
   }
 
@@ -350,7 +429,7 @@ export class FlowDocModel implements DocumentRegistry.IModel {
    */
   private _onSharedModelChanged = (
     sender: FlowDoc,
-    changes: FlowDocChange
+    changes: FlowDocChange | NodeChangeList
   ): void => {
     if (changes.contentChange || changes.positionChange) {
       this.triggerContentChange();
@@ -380,8 +459,6 @@ export class FlowDocModel implements DocumentRegistry.IModel {
   private _contentChanged = new Signal<this, void>(this);
   private _collaborationEnabled: boolean;
   private _stateChanged = new Signal<this, IChangedArgs<any>>(this);
-  private _maxnodeid: number = 0;
-  //private newUniqueNodeId: <T>(item: T) => string;
 }
 
 /**
@@ -401,15 +478,22 @@ export type FlowDocChange = {
   positionChange?: Position;
 } & DocumentChange;
 
+
+export type NodeChangeList = {
+  [key: string]: FlowNodeData
+} & DocumentChange;
+
 /**
  * SharedModel, stores and shares the content between clients.
  */
-export class FlowDoc extends YDocument<FlowDocChange> {
+export class FlowDoc extends YDocument<FlowDocChange | NodeChangeList> {
   constructor() {
     super();
     // Creating a new shared object and listen to its changes
     this._content = this.ydoc.getMap('content');
-    this._content.observe(this._contentObserver);
+    // this._content.observe(this._contentObserver);
+    this._nodes = new NodeList();//this.ydoc.getMap('nodes'));
+    // this._nodes.y.observe(this._nodeListObserver);
   }
 
   readonly version: string = '1.0.0';
@@ -421,7 +505,8 @@ export class FlowDoc extends YDocument<FlowDocChange> {
     if (this.isDisposed) {
       return;
     }
-    this._content.unobserve(this._contentObserver);
+    // this._content.unobserve(this._contentObserver);
+    // this._nodes.y.unobserve(this._nodeListObserver);
     super.dispose();
   }
 
@@ -442,17 +527,12 @@ export class FlowDoc extends YDocument<FlowDocChange> {
    */
   get(key: 'content'): string;
   get(key: 'position'): Position;
-  get(key: 'nodelist'): FlowNode[]; //Map<string, FlowNode>;
   get(key: string): any {
     const data = this._content.get(key);
     if (key === 'position') {
       return data
         ? JSON.parse(data)
         : { x: 0, y: 0 };
-    } else if (key === 'nodelist') {
-      return data ?
-        JSON.parse(data)
-        : []; //new Map<string, FlowNode>();
     } else {
       return data ?? '';
     }
@@ -465,13 +545,10 @@ export class FlowDoc extends YDocument<FlowDocChange> {
    * @param key The key of the object.
    * @param value New object.
    */
-  set(key: 'content', value: string): void;
+  // set(key: 'content', value: string): void;
   set(key: 'position', value: PartialJSONObject): void;
-  set(key: 'nodelist', value: Object): void; // Map<string, FlowNode>
   set(key: string, value: string | PartialJSONObject | Object): void {
     if (key === 'position') {
-      this._content.set(key, JSON.stringify(value));
-    } else if (key === 'nodelist') {
       this._content.set(key, JSON.stringify(value));
     } else {
       this._content.set(key, value);
@@ -483,20 +560,31 @@ export class FlowDoc extends YDocument<FlowDocChange> {
    *
    * @param event Model event
    */
-  private _contentObserver = (event: Y.YMapEvent<any>): void => {
-    const changes: FlowDocChange = {};
+  // private _contentObserver = (event: Y.YMapEvent<any>): void => {
+  //   const changes: FlowDocChange = {};
 
-    // Checks which object changed and propagates them.
-    if (event.keysChanged.has('position')) {
-      changes.positionChange = JSON.parse(this._content.get('position'));
-    }
+  //   // Checks which object changed and propagates them.
+  //   if (event.keysChanged.has('position')) {
+  //     changes.positionChange = JSON.parse(this._content.get('position'));
+  //   }
 
-    if (event.keysChanged.has('content')) {
-      changes.contentChange = this._content.get('content');
-    }
+  //   if (event.keysChanged.has('content')) {
+  //     changes.contentChange = this._content.get('content');
+  //   }
 
-    this._changed.emit(changes);
-  };
+  //   this._changed.emit(changes);
+  // };
+
+  // private _nodeListObserver = (event: Y.YMapEvent<any>): void => {
+  //   const changes: NodeChangeList = {};
+  //   console.log('change', event);
+  //   this._changed.emit(changes);
+  // }
+
+  get nodes(): NodeList {
+    return this._nodes;
+  }
 
   private _content: Y.Map<any>;
+  private _nodes: NodeList;
 }

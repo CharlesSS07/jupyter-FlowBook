@@ -1,0 +1,60 @@
+{
+  "x": -3,
+  "y": 0,
+  "nodelist": {
+    "a4c716f5-b57f-4df2-a2bf-0d55dc821693": {
+      "func": "",
+      "inputs": [],
+      "outputs": [],
+      "pos": {
+        "x": 120,
+        "y": 113
+      }
+    },
+    "73acfeb4-a555-4be9-a9e5-ea2a476de782": {
+      "func": "",
+      "inputs": [],
+      "outputs": [],
+      "pos": {
+        "x": 106,
+        "y": 227
+      }
+    },
+    "35e20efb-3aa2-4d36-8209-74ea53dcc0aa": {
+      "func": "",
+      "inputs": [],
+      "outputs": [],
+      "pos": {
+        "x": 497,
+        "y": 333
+      }
+    },
+    "e1b31cb9-e37c-40c1-992b-b9e7b1e711c3": {
+      "func": "",
+      "inputs": [],
+      "outputs": [],
+      "pos": {
+        "x": 308,
+        "y": 69
+      }
+    },
+    "55b6dcfb-4a0b-4f84-a9b7-120532bfb91b": {
+      "func": "",
+      "inputs": [],
+      "outputs": [],
+      "pos": {
+        "x": 266,
+        "y": 451
+      }
+    },
+    "a3a30ead-984d-42ad-9281-7fd7bafceae4": {
+      "func": "",
+      "inputs": [],
+      "outputs": [],
+      "pos": {
+        "x": 149.421875,
+        "y": 405
+      }
+    }
+  }
+}

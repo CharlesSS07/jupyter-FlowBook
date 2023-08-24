@@ -36,6 +36,9 @@ The `jlpm` command is JupyterLab's pinned version of
 ```bash
 # Clone the repo to your local environment
 # Change directory to the flowlab directory
+# create a conda environment with the right tools
+conda create -n jupyterlab-ext --override-channels --strict-channel-priority -c conda-forge -c nodefaults jupyterlab=4 nodejs=18 jinja2-time
+conda activate jupyerlab-ext
 # Install package in development mode
 pip install -e "."
 # Link your development version of the extension with JupyterLab
